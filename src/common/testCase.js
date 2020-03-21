@@ -2,50 +2,52 @@ const TestCase = {
   DP1001: {
     id: 1,
     name: 'DP.1001',
-    description: '测试系统启动',
+    description: '检测CHM报文',
     param: '',
   },
   DP1002: {
     id: 2,
     name: 'DP.1002',
-    description: '发送BHM',
-    param: '',
+    description: '检测CRM报文, 不能辨识BMS',
+    param: 'AC0D', // 最高允许充电总电压: 350.0V
   },
   DP1003: {
     id: 3,
     name: 'DP.1003',
-    description: '发送BRM',
-    param: '',
+    description: '检测CRM报文, 能辨识BMS',
+    param: '00010101AC0DAC0D31323334', // BMS通信协议版本号: V1.1, 电池类型: 铅酸电池, 整车动力蓄电池系统额定容量: 350.0Ah,
+    // 整车动力蓄电池系统额定总电压: 350.0V, 电池生产厂商名称: 1234
   },
   ND1001: {
     id: 4,
     name: 'DN.1001',
-    description: '停止发送BHM',
+    description: 'BMS辨识异常, BMS停止发送',
     param: '',
   },
   DN1002: {
     id: 5,
     name: 'DN.1002',
-    description: '停止发送BRM',
-    param: '',
+    description: 'BMS辨识异常, 异常发送BRM',
+    param: '00010101AC0DAC0D31323334',
   },
   DN1003: {
     id: 6,
     name: 'DN.1003',
-    description: '发送BHM',
-    param: '',
+    description: 'BMS辨识异常',
+    param: 'AC0D', // 最高允许充电总电压: 350.0V
   },
   DN1004: {
     id: 7,
     name: 'DN.1004',
-    description: '发送BRM',
-    param: '',
+    description: '无法进入充电配置阶段',
+    param: '00010101AC0DAC0D31323334',
   },
   DP2001: {
     id: 8,
     name: 'DP.2001',
-    description: '发送BCP',
-    param: '',
+    description: '检测CML报文',
+    param: 'AC0DAC0DAC0DAC0D96F401AC0D', // 单体动力蓄电池最高允许充电电压: 35.00V, 最高允许充电电流: 50.0A, 动力蓄电池标称总能量: 350.0kW.h,
+    // 最高允许充电总电压: 350.0V, 最高允许温度: 100°C, 整车动力蓄电池荷电状态: 50.0%, 整车动力蓄电池当前电池电压: 350.0V
   },
   DP2002: {
     id: 9,
