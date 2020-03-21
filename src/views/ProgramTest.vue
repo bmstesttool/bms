@@ -53,7 +53,7 @@
 
 <script>
 import Translator from '@/common/translator';
-
+import TestPassJudge from '@/common/testPassJudge';
 const net = require('net');
 
 export default {
@@ -75,12 +75,14 @@ export default {
       socket: null,
       server: null,
       translator: new Translator(),
+      testPassJudge: new TestPassJudge(),
+      currentTestID: 1,
+      currentTestResult: 0,
     };
   },
 
   methods: {
-    reciveProcess(data) {
-      const message = this.translator.translate(data);
+    receiveProcess(message) {
       if (message) {
         this.$db.message.insert(message, (err, doc) => {
           console.log(err, doc);
@@ -90,8 +92,15 @@ export default {
       }
     },
     onClickOpen() {
+      var that = this;
       if (!this.link.listened) {
+        // 启动测试
+        this.testPassJudge.startPassJudge(that.currentTestID, new Date());
         this.createTCPServer();
+        // 启动测试结果监测
+        setTimeout(() => {
+          currentTestResult = that.testPassJudge.passJudge(that.currentTestID);
+        }, 5000)
       } else {
         if (this.socket) {
           this.socket.destroy();
@@ -101,6 +110,7 @@ export default {
     },
 
     createTCPServer() {
+      var that = this;
       const server = net.createServer();
       server.maxConnections = 1;
       server.on('connection', (socket) => {
@@ -108,7 +118,9 @@ export default {
         console.log('已连接');
         socket.on('data', (data) => {
           console.log(data);
-          this.reciveProcess(data);
+          const message = this.translator.translate(data);
+          that.testPassJudge.passJudge();
+          this.receiveProcess(message);
         });
         socket.on('close', () => {
           this.link.linked = false;
@@ -135,6 +147,14 @@ export default {
     });
     // this.$db.message.remove({}, { multi: true });
   },
+
+  watch: {
+    currentTestResult(newTestResult, oldTestResult) {
+      if (newTestResult) {
+        console.log(newTestResult);
+      }
+    }
+  } 
 };
 </script>
 
