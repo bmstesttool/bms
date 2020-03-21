@@ -189,7 +189,7 @@ export default {
       testProgramList: [
         {
           programName: 'test01',
-          createOperator: 'daiwei',
+          createOperator: 'liujun',
           createDate: '2020-03-03 17:50:21',
           correctFlag: true,
         },
