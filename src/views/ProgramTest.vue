@@ -23,6 +23,17 @@
           @click="onClickOpen"
         >{{ link.listened ? '断开' : '监听' }}</el-button>
         <el-checkbox v-model="capture" style="margin-left: 10px;">允许CAN报文捕获</el-checkbox>
+        <span style="margin-left: 20px;">请选择测试程序: </span>
+        <el-select v-model="currentProgram" placeholder="请选择" size="mini" value-key="name">
+          <el-option
+            v-for="(program, index) in programList"
+            :key="index"
+            :label="program.name"
+            :value="program"
+          >
+          </el-option>
+        </el-select>
+        <el-button type="primary" size="mini" @click="onClickStartTest">开始测试</el-button>
       </div>
     </div>
     <div class="message-area">
@@ -42,17 +53,17 @@
           </template>
         </el-table-column>
         <el-table-column label="数据长度" prop="dataLength" width="70" align="center"></el-table-column>
-        <el-table-column label="数据" prop="data" width="300" show-overflow-tooltip></el-table-column>
+        <el-table-column label="数据" prop="dataStr" width="300" show-overflow-tooltip></el-table-column>
         <el-table-column label="报文翻译" prop="text" show-overflow-tooltip></el-table-column>
       </el-table>
       </el-scrollbar>
     </div>
-    <div class="send-area"></div>
   </div>
 </template>
 
 <script>
 import Translator from '@/common/translator';
+import Judge from '@/common/judge';
 
 const net = require('net');
 
@@ -75,15 +86,32 @@ export default {
       socket: null,
       server: null,
       translator: new Translator(),
+      judge: new Judge(),
+      currentTestCase: null,
+      programList: [],
+      currentProgram: {},
     };
   },
 
   methods: {
     reciveProcess(data) {
       const message = this.translator.translate(data);
+      const judgement = this.judge.judge(message, this.currentTestCase);
+      switch (judgement) {
+        case 0:
+          console.log('测试失败');
+          break;
+        case 1:
+          console.log('测试成功');
+          break;
+        case 2:
+          console.log('测试进行中');
+          break;
+        default:
+          break;
+      }
       if (message) {
         this.$db.message.insert(message, (err, doc) => {
-          console.log(err, doc);
           this.messageTable.push(doc);
           this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
         });
@@ -127,13 +155,24 @@ export default {
       server.listen(8899, '192.168.124.8');
       this.server = server;
     },
+
+    updateProgramList() {
+      this.$db.program.find({}).sort({ createTime: 1 }).exec((err, docs) => {
+        this.programList = docs;
+      });
+    },
+    onClickStartTest() {
+      [this.currentTestCase] = this.currentProgram.item;
+    },
   },
 
   mounted() {
     this.$db.message.find({}).sort({ time: 1 }).exec((err, docs) => {
       this.messageTable = docs;
+      console.log(docs);
     });
-    // this.$db.message.remove({}, { multi: true });
+    this.$db.message.remove({}, { multi: true });
+    this.updateProgramList();
   },
 };
 </script>
@@ -156,12 +195,5 @@ export default {
   width: 100%;
   top: 40px;
   bottom: 40px;
-}
-
-.send-area {
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  height: 40px;
 }
 </style>

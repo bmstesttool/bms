@@ -546,7 +546,8 @@ class Translator {
     }
 
     if (message) {
-      message.data = message.data.toString('hex').replace(/\s/g, '').replace(/(.{2})/g, '$1 ').toUpperCase();
+      message.dataStr = message.data.toString('hex').replace(/\s/g, '').replace(/(.{2})/g, '$1 ').toUpperCase();
+      message.data = Array.prototype.slice.call(message.data);
     }
 
     return message;

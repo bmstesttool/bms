@@ -10,6 +10,9 @@ class Message {
   // 时间
   time;
 
+  // 时间戳
+  timestamp;
+
   // 帧ID
   id;
 
@@ -19,11 +22,16 @@ class Message {
   // 数据
   data;
 
+  // 数据转码
+  dataStr;
+
   // 翻译报文
   text;
 
   constructor(code) {
-    this.time = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+    const date = new Date();
+    this.time = moment(date).format('YYYY-MM-DD HH:mm:ss.SSS');
+    this.timestamp = date.valueOf();
     this.code = code.code;
     this.id = code.id;
     this.dataLength = code.dataLength;
