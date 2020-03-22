@@ -143,6 +143,17 @@ class TestController {
               if (this.firstReceivedMessageTimer !== null) {
                 clearTimeout(this.firstReceivedMessageTimer);
               }
+              this.testProgramManager.setProgramTestStatusByIndex(testProgramIndex, '测试完成');
+              if (this.currentTempPassStatus) {
+                this.testProgramManager.setProgramTestResultByIndex(testProgramIndex, '测试通过');
+              } else {
+                this.testProgramManager.setProgramTestResultByIndex(testProgramIndex, '测试不通过');
+              }
+              Vue.bus.emit('testSchedule', {
+                index: testProgramIndex,
+                testStatus: this.testProgramManager.getProgramTestStatusByIndex(testProgramIndex),
+                testResult: this.testProgramManager.getProgramTestResultByIndex(testProgramIndex),
+              });
               this.changeCurrentTestItem();
             }
           }

@@ -225,9 +225,11 @@ export default {
     },
     testStatusTaggle() {
       if (this.testButtonStatus) {
+        this.testButtonStatus = !this.testButtonStatus;
         this.testController.readyTest();
         this.testController.startTest();
       } else {
+        this.testButtonStatus = !this.testButtonStatus;
         this.testController.endTest();
       }
     },
