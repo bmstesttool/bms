@@ -10,6 +10,9 @@ class Message {
   // 时间
   time;
 
+  // 时间戳
+  timeStamp;
+
   // 帧ID
   id;
 
@@ -24,6 +27,7 @@ class Message {
 
   constructor(code) {
     this.time = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+    this.timeStamp = moment(this.time).valueOf();
     this.code = code.code;
     this.id = code.id;
     this.dataLength = code.dataLength;

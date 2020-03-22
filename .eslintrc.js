@@ -18,5 +18,8 @@ module.exports = {
     'no-bitwise': 'off',
     'no-case-declarations': 'off',
     'no-underscore-dangle': 'off',
+    "prefer-destructuring": ["error", {"object": false, "array": false}],
+    "no-else-return": ["error", { "allowElseIf": true }],
+    "arrow-body-style": ["error", "always"]
   },
 };

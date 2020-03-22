@@ -10,11 +10,14 @@ import db from '@/common/db';
 import App from './App.vue';
 import router from './router';
 import store from './store';
+import VueBus from 'vue-bus';
 
 
 Vue.use(ElementUI);
 
 Vue.use(VXETable);
+
+Vue.use(VueBus);
 
 Vue.db = Vue.prototype.$db = db;
 

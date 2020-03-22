@@ -48,7 +48,7 @@
               ref='testProgramListRef'
               :data='testProgramList'
               highlight-current-row
-              @current-change='selectestProgramList'
+              @current-change='selectTestProgramList'
               >
               <el-table-column property='programName' label='程序名' width='150'></el-table-column>
               <el-table-column property='createOperator' label='创建人' width='200'></el-table-column>
@@ -506,7 +506,7 @@ export default {
       }, 300);
     },
     // 选择测试程序
-    selectestProgramList(row) {
+    selectTestProgramList(row) {
       const that = this;
       that.currentSelectedTestProgram = {
         programName: row.programName,
