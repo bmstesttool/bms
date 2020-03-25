@@ -18,5 +18,7 @@ module.exports = {
     'no-bitwise': 'off',
     'no-case-declarations': 'off',
     'no-underscore-dangle': 'off',
+    'no-param-reassign': 'off',
+    'prefer-destructuring': ['error', {'array': false}],
   },
 };

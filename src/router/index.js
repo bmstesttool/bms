@@ -5,8 +5,7 @@ const Container = () => import('@/views/Container.vue');
 const Login = () => import('@/views/Login.vue');
 
 const Edit = () => import('@/views/Edit.vue');
-// const Edit = () => import('@/views/ProgramEdit.vue');
-const Test = () => import('@/views/ProgramTest.vue');
+const Test = () => import('@/views/Test.vue');
 
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {

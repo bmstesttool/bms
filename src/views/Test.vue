@@ -1,0 +1,326 @@
+<template>
+  <div class="programTest">
+    <div class="function-area">
+      <div>
+        <span>端口号：</span>
+        <el-select
+          v-model="channel"
+          placeholder="请选择端口号"
+          size="mini"
+          value-key="name"
+        >
+          <el-option
+            v-for="(item, index) in channelList"
+            :key="index"
+            :label="item.name"
+            :value="item"
+          ></el-option>
+        </el-select>
+        <el-button
+          type="primary"
+          size="mini"
+          style="margin-left: 10px;"
+          @click="onClickOpen"
+        >{{ link.listened ? '断开' : '监听' }}</el-button>
+        <el-checkbox v-model="capture" style="margin-left: 10px;">允许CAN报文捕获</el-checkbox>
+        <span style="margin-left: 20px;">请选择测试程序: </span>
+        <el-select
+          v-model="currentProgram"
+          placeholder="请选择"
+          size="mini"
+          value-key="name"
+          @change="onSelectProgram"
+        >
+          <el-option
+            v-for="(program, index) in programList"
+            :key="index"
+            :label="program.name"
+            :value="program"
+          >
+          </el-option>
+        </el-select>
+        <el-button type="primary" size="mini" @click="onClickStartTest">{{testState ? '结束测试' : '开始测试'}}</el-button>
+      </div>
+    </div>
+    <div class="message-area">
+      <el-tabs v-model="currentTab">
+        <el-tab-pane label="测试进度" name="schedule">
+          <el-table
+            :data.sync="testCaseList"
+            size="mini"
+            border
+          >
+            <el-table-column label="序号" prop="index" width="50"></el-table-column>
+            <el-table-column label="名称" prop="name" width="80"></el-table-column>
+            <el-table-column label="描述" prop="description"></el-table-column>
+            <el-table-column label="参数" prop="param"></el-table-column>
+            <el-table-column label="测试状态" prop="status"></el-table-column>
+            <el-table-column label="测试结果" prop="result"></el-table-column>
+            <el-table-column label="生成报告" prop="report">
+              <template slot-scope="scope">
+                <span>{{scope.row.report ? '是' : '否'}}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="报文翻译" name="translation">
+          <el-scrollbar style="width: 100%; height: 100%;">
+            <el-table
+              :data="messageTable"
+              ref="messageTable"
+              size="mini"
+              border
+            >
+              <el-table-column type="index" label="帧序号" width="100" align="center"></el-table-column>
+              <el-table-column label="收发标志" prop="flag" width="70" align="center"></el-table-column>
+              <el-table-column label="时间戳" prop="time" width="180" align="center"></el-table-column>
+              <el-table-column label="帧ID" prop="id" width="100" align="center">
+                <template slot-scope="scope">
+                  <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="数据长度" prop="dataLength" width="70" align="center"></el-table-column>
+              <el-table-column label="数据" prop="dataStr" width="300" show-overflow-tooltip></el-table-column>
+              <el-table-column label="报文翻译" prop="text" show-overflow-tooltip></el-table-column>
+            </el-table>
+          </el-scrollbar>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+  </div>
+</template>
+
+<script>
+import Translator from '@/common/translator';
+import Judge from '@/common/judge';
+
+const net = require('net');
+
+export default {
+  name: 'test',
+
+  data() {
+    return {
+      channel: { name: '127.0.0.1:8899', type: 'server' },
+      channelList: [
+        { name: '127.0.0.1:8899', type: 'server' },
+        { name: 'COM1', type: 'serial' },
+      ],
+      capture: true,
+      link: {
+        linked: false,
+        listened: false,
+      },
+      messageTable: [],
+      socket: null,
+      server: null,
+      translator: new Translator(),
+      judge: new Judge(),
+      currentTestCase: {},
+      testCaseList: [],
+      programList: [],
+      currentProgram: {},
+      currentTab: 'schedule',
+      cannotReceiveMessageTimer: null,
+      donotReceiveMessageTimer: null,
+      firstReceiveMessageTimer: null,
+      testState: false,
+    };
+  },
+
+  methods: {
+    reciveProcess(data) {
+      const message = this.translator.translate(data);
+      if (message) {
+        clearTimeout(this.cannotReceiveMessageTimer);
+        if (this.firstReceiveMessageTimer === null) {
+          this.firstReceiveMessageTimer = setTimeout(() => {
+            this.testCaseList[this.currentTestCase.index].status = '测试完成';
+            this.testCaseList[this.currentTestCase.index].result = '失败';
+            this.switchToNextTestCase();
+            this.firstReceiveMessageTimer = null;
+          }, 5000);
+        } else {
+          clearTimeout(this.firstReceiveMessageTimer);
+        }
+        if (this.testState && message.flag === '发送') {
+          if (this.currentTestCase.name === 'DN.2009' && this.donotReceiveMessageTimer) {
+            this.testCaseList[this.currentTestCase.index].result = '失败';
+            this.testCaseList[this.currentTestCase.index].status = '测试完成';
+            this.switchToNextTestCase();
+            clearTimeout(this.donotReceiveMessageTimer);
+            this.donotReceiveMessageTimer = null;
+          } else {
+            const judgement = this.judge.judge(message, this.currentTestCase);
+            switch (judgement) {
+              case 0:
+                console.log('测试失败');
+                this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                this.testCaseList[this.currentTestCase.index].result = '失败';
+                this.switchToNextTestCase();
+                break;
+              case 1:
+                console.log('测试成功');
+                this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                this.testCaseList[this.currentTestCase.index].result = '成功';
+                this.switchToNextTestCase();
+                break;
+              case 2:
+                console.log('测试进行中');
+                break;
+              default:
+                break;
+            }
+            if (this.currentTestCase.name === 'DP.4001') {
+              clearTimeout(this.donotReceiveMessageTimer);
+              this.donotReceiveMessageTimer = setTimeout(() => {
+                this.testCaseList[this.currentTestCase.index].result = '成功';
+                this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                this.switchToNextTestCase();
+                this.donotReceiveMessageTimer = null;
+              }, 1000);
+            }
+          }
+        }
+        this.$db.message.insert(message, (err, doc) => {
+          this.messageTable.push(doc);
+          this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
+        });
+      }
+    },
+
+    onClickOpen() {
+      if (!this.link.listened) {
+        this.createTCPServer();
+      } else {
+        if (this.socket) {
+          this.socket.destroy();
+        }
+        this.server.close();
+      }
+    },
+
+    createTCPServer() {
+      const server = net.createServer();
+      server.maxConnections = 1;
+      server.on('connection', (socket) => {
+        this.link.linked = true;
+        console.log('已连接');
+        socket.on('data', (data) => {
+          this.reciveProcess(data);
+        });
+        socket.on('close', () => {
+          this.link.linked = false;
+        });
+        this.socket = socket;
+      });
+      server.on('close', () => {
+        this.link.listened = false;
+        console.log('TCP server 已关闭');
+      });
+      server.on('listening', () => {
+        this.link.listened = true;
+        console.log('正在监听127.0.0.1:8899');
+      });
+      // server.listen(8899, '127.0.0.1');
+      server.listen(8899, '192.168.124.8');
+      this.server = server;
+    },
+
+    updateProgramList() {
+      this.$db.program.find({}).sort({ createTime: 1 }).exec((err, docs) => {
+        this.programList = docs;
+      });
+    },
+
+    onClickStartTest() {
+      if (this.testState) {
+        this.testState = false;
+        this.resetCurrentProgram();
+        this.currentTestCase = {};
+        clearTimeout(this.cannotReceiveMessageTimer);
+      } else {
+        this.testState = true;
+        this.resetCurrentProgram();
+        this.currentTestCase = this.testCaseList[0];
+        this.testCaseList[0].status = '正在测试';
+        this.cannotReceiveMessageTimer = setTimeout(() => {
+          this.testState = false;
+          this.$message.error('5s内未收到报文，请检查通讯是否正常');
+          this.testCaseList[0].result = '失败';
+          this.testCaseList[0].status = '测试完成';
+        }, 5000);
+      }
+    },
+
+    onSelectProgram(program) {
+      this.testCaseList = program.item.map((testCase, index) => {
+        testCase.index = index;
+        return testCase;
+      });
+    },
+
+    resetCurrentProgram() {
+      this.testCaseList = this.testCaseList.map((testCase) => {
+        testCase.status = '未开始';
+        testCase.result = '';
+        return testCase;
+      });
+    },
+
+    switchToNextTestCase() {
+      const index = this.currentTestCase.index;
+      if (index + 1 >= this.testCaseList.length) {
+        this.testState = false;
+      } else {
+        this.currentTestCase = this.testCaseList[index + 1];
+        this.testCaseList[index + 1].status = '正在测试';
+        if (this.currentTestCase.name === 'DN.2009') {
+          this.donotReceiveMessageTimer = setTimeout(() => {
+            this.testCaseList[this.currentTestCase.index].result = '成功';
+            this.testCaseList[this.currentTestCase.index].status = '测试完成';
+            this.switchToNextTestCase();
+            this.donotReceiveMessageTimer = null;
+          }, 1000);
+        } else {
+          this.cannotReceiveMessageTimer = setTimeout(() => {
+            this.testState = false;
+            this.$message.error('5s内未收到报文，请检查通讯是否正常');
+            this.testCaseList[0].result = '失败';
+            this.testCaseList[0].status = '测试完成';
+          }, 5000);
+        }
+      }
+    },
+  },
+
+  mounted() {
+    this.$db.message.find({}).sort({ time: 1 }).exec((err, docs) => {
+      this.messageTable = docs;
+    });
+    this.$db.message.remove({}, { multi: true });
+    this.updateProgramList();
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.programTest {
+  height: 100%;
+  position: relative;
+  padding: 5px;
+}
+
+.function-area {
+  position: absolute;
+  width: 100%;
+  height: 40px;
+}
+
+.message-area {
+  position: absolute;
+  width: 100%;
+  top: 40px;
+  bottom: 40px;
+}
+</style>
