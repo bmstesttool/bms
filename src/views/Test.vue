@@ -7,12 +7,12 @@
           v-model="channel"
           placeholder="请选择端口号"
           size="mini"
-          value-key="name"
+          value-key="path"
         >
           <el-option
             v-for="(item, index) in channelList"
             :key="index"
-            :label="item.name"
+            :label="item.path"
             :value="item"
           ></el-option>
         </el-select>
@@ -21,7 +21,7 @@
           size="mini"
           style="margin-left: 10px;"
           @click="onClickOpen"
-        >{{ link.listened ? '断开' : '监听' }}</el-button>
+        >{{ open ? '关闭' : '打开' }}</el-button>
         <el-checkbox v-model="capture" style="margin-left: 10px;">允许CAN报文捕获</el-checkbox>
         <span style="margin-left: 20px;">请选择测试程序: </span>
         <el-select
@@ -64,26 +64,25 @@
           </el-table>
         </el-tab-pane>
         <el-tab-pane label="报文翻译" name="translation">
-          <el-scrollbar style="width: 100%; height: 100%;">
-            <el-table
-              :data="messageTable"
-              ref="messageTable"
-              size="mini"
-              border
-            >
-              <el-table-column type="index" label="帧序号" width="100" align="center"></el-table-column>
-              <el-table-column label="收发标志" prop="flag" width="70" align="center"></el-table-column>
-              <el-table-column label="时间戳" prop="time" width="180" align="center"></el-table-column>
-              <el-table-column label="帧ID" prop="id" width="100" align="center">
-                <template slot-scope="scope">
-                  <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="数据长度" prop="dataLength" width="70" align="center"></el-table-column>
-              <el-table-column label="数据" prop="dataStr" width="300" show-overflow-tooltip></el-table-column>
-              <el-table-column label="报文翻译" prop="text" show-overflow-tooltip></el-table-column>
-            </el-table>
-          </el-scrollbar>
+          <el-table
+            :data="messageTable"
+            ref="messageTable"
+            size="mini"
+            border
+            height="800"
+          >
+            <el-table-column type="index" label="帧序号" width="100" align="center"></el-table-column>
+            <el-table-column label="收发标志" prop="flag" width="70" align="center"></el-table-column>
+            <el-table-column label="时间戳" prop="time" width="180" align="center"></el-table-column>
+            <el-table-column label="帧ID" prop="id" width="100" align="center">
+              <template slot-scope="scope">
+                <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="数据长度" prop="dataLength" width="70" align="center"></el-table-column>
+            <el-table-column label="数据" prop="dataStr" width="300" show-overflow-tooltip></el-table-column>
+            <el-table-column label="报文翻译" prop="text" show-overflow-tooltip></el-table-column>
+          </el-table>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -94,6 +93,8 @@
 import Translator from '@/common/translator';
 import Judge from '@/common/judge';
 
+const SerialPort = require('serialport');
+const InterByteTimeout = require('@serialport/parser-inter-byte-timeout');
 const net = require('net');
 
 export default {
@@ -101,11 +102,10 @@ export default {
 
   data() {
     return {
-      channel: { name: '127.0.0.1:8899', type: 'server' },
-      channelList: [
-        { name: '127.0.0.1:8899', type: 'server' },
-        { name: 'COM1', type: 'serial' },
-      ],
+      channel: null,
+      channelList: [],
+      port: null,
+      open: false,
       capture: true,
       link: {
         linked: false,
@@ -190,13 +190,38 @@ export default {
     },
 
     onClickOpen() {
-      if (!this.link.listened) {
-        this.createTCPServer();
-      } else {
-        if (this.socket) {
-          this.socket.destroy();
-        }
-        this.server.close();
+      // if (!this.link.listened) {
+      //   this.createTCPServer();
+      // } else {
+      //   if (this.socket) {
+      //     this.socket.destroy();
+      //   }
+      //   this.server.close();
+      // }
+      if (this.open) {
+        this.port.close((err) => {
+          if (err) {
+            this.$message.error(`关闭串口${this.channel.path}失败！`);
+          } else {
+            this.open = false;
+            this.port = null;
+          }
+        });
+      } else if (this.channel !== null) {
+        const port = new SerialPort(this.channel.path, {
+          baudRate: 115200,
+          autoOpen: false,
+        });
+        port.open((err) => {
+          if (err) {
+            this.$message.error(`打开串口${this.channel.path}失败！请检查该串口是否被占用`);
+          } else {
+            this.open = true;
+            this.port = port;
+          }
+        });
+        const parser = port.pipe(new InterByteTimeout({ interval: 20, maxBufferSize: 32 }));
+        parser.on('data', this.reciveProcess);
       }
     },
 
@@ -300,6 +325,13 @@ export default {
     });
     this.$db.message.remove({}, { multi: true });
     this.updateProgramList();
+
+    SerialPort.list().then(
+      (ports) => {
+        this.channelList = ports;
+      },
+      (err) => console.error(err),
+    );
   },
 };
 </script>

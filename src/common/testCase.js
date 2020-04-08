@@ -30,7 +30,7 @@ const TestCase = {
     result: '',
     report: true,
   },
-  ND1001: {
+  DN1001: {
     id: 4,
     name: 'DN.1001',
     description: 'BMS辨识异常, BMS停止发送',

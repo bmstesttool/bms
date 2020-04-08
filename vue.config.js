@@ -14,6 +14,7 @@ module.exports = {
   },
   pluginOptions: {
     electronBuilder: {
+      externals: ['serialport'],
       builderOptions: {
         win: {
           target: 'nsis',
