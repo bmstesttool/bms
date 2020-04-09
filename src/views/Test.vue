@@ -39,7 +39,7 @@
           >
           </el-option>
         </el-select>
-        <el-button type="primary" size="mini" @click="onClickStartTest">{{testState ? '结束测试' : '开始测试'}}</el-button>
+        <el-button type="primary" size="mini" @click="onClickStartTest" :disabled="!open || !currentProgram">{{testState ? '结束测试' : '开始测试'}}</el-button>
       </div>
     </div>
     <div class="message-area">
@@ -52,11 +52,11 @@
           >
             <el-table-column label="序号" prop="index" width="50"></el-table-column>
             <el-table-column label="名称" prop="name" width="80"></el-table-column>
-            <el-table-column label="描述" prop="description"></el-table-column>
-            <el-table-column label="参数" prop="param"></el-table-column>
-            <el-table-column label="测试状态" prop="status"></el-table-column>
-            <el-table-column label="测试结果" prop="result"></el-table-column>
-            <el-table-column label="生成报告" prop="report">
+            <el-table-column label="描述" prop="description" show-overflow-tooltip></el-table-column>
+            <el-table-column label="参数" prop="param" show-overflow-tooltip></el-table-column>
+            <el-table-column label="测试状态" prop="status" width="100"></el-table-column>
+            <el-table-column label="测试结果" prop="result" width="100"></el-table-column>
+            <el-table-column label="生成报告" prop="report" width="100">
               <template slot-scope="scope">
                 <span>{{scope.row.report ? '是' : '否'}}</span>
               </template>
@@ -119,85 +119,97 @@ export default {
       currentTestCase: {},
       testCaseList: [],
       programList: [],
-      currentProgram: {},
+      currentProgram: null,
       currentTab: 'schedule',
       cannotReceiveMessageTimer: null,
       donotReceiveMessageTimer: null,
       firstReceiveMessageTimer: null,
       testState: false,
+      precondition: false,
+      messageBuffer: [],
     };
   },
 
   methods: {
     reciveProcess(data) {
-      const message = this.translator.translate(data);
-      if (message) {
-        clearTimeout(this.cannotReceiveMessageTimer);
-        if (this.firstReceiveMessageTimer === null) {
-          this.firstReceiveMessageTimer = setTimeout(() => {
-            this.testCaseList[this.currentTestCase.index].status = '测试完成';
-            this.testCaseList[this.currentTestCase.index].result = '失败';
-            this.switchToNextTestCase();
-            this.firstReceiveMessageTimer = null;
-          }, 5000);
-        } else {
-          clearTimeout(this.firstReceiveMessageTimer);
+      console.log(data.toString('hex'));
+      if (data[0] === 0xAA && data[1] === 0x55) {
+        switch (data[3]) {
+          // 测试命令回复
+          case 0x06:
+            clearTimeout(this.cannotReceiveMessageTimer);
+            console.log('开始测试，等待进入前置条件');
+            break;
+          // 前置条件回复
+          case 0x01:
+            console.log('进入前置条件，判断接下来的报文');
+            this.precondition = true;
+            break;
+          default:
+            break;
         }
-        if (this.testState && message.flag === '发送') {
-          if (this.currentTestCase.name === 'DN.2009' && this.donotReceiveMessageTimer) {
-            this.testCaseList[this.currentTestCase.index].result = '失败';
-            this.testCaseList[this.currentTestCase.index].status = '测试完成';
-            this.switchToNextTestCase();
-            clearTimeout(this.donotReceiveMessageTimer);
-            this.donotReceiveMessageTimer = null;
+      } else {
+        const message = this.translator.translate(data);
+        if (message) {
+          clearTimeout(this.cannotReceiveMessageTimer);
+          if (this.firstReceiveMessageTimer === null) {
+            this.firstReceiveMessageTimer = setTimeout(() => {
+              this.testCaseList[this.currentTestCase.index].status = '测试完成';
+              this.testCaseList[this.currentTestCase.index].result = '失败';
+              this.switchToNextTestCase();
+              this.firstReceiveMessageTimer = null;
+            }, 5000);
           } else {
-            const judgement = this.judge.judge(message, this.currentTestCase);
-            switch (judgement) {
-              case 0:
-                console.log('测试失败');
-                this.testCaseList[this.currentTestCase.index].status = '测试完成';
-                this.testCaseList[this.currentTestCase.index].result = '失败';
-                this.switchToNextTestCase();
-                break;
-              case 1:
-                console.log('测试成功');
-                this.testCaseList[this.currentTestCase.index].status = '测试完成';
-                this.testCaseList[this.currentTestCase.index].result = '成功';
-                this.switchToNextTestCase();
-                break;
-              case 2:
-                console.log('测试进行中');
-                break;
-              default:
-                break;
-            }
-            if (this.currentTestCase.name === 'DP.4001') {
+            clearTimeout(this.firstReceiveMessageTimer);
+          }
+          if (this.testState && message.flag === '发送' && this.precondition) {
+            if (this.currentTestCase.name === 'DN.2009' && this.donotReceiveMessageTimer) {
+              this.testCaseList[this.currentTestCase.index].result = '失败';
+              this.testCaseList[this.currentTestCase.index].status = '测试完成';
+              this.switchToNextTestCase();
               clearTimeout(this.donotReceiveMessageTimer);
-              this.donotReceiveMessageTimer = setTimeout(() => {
-                this.testCaseList[this.currentTestCase.index].result = '成功';
-                this.testCaseList[this.currentTestCase.index].status = '测试完成';
-                this.switchToNextTestCase();
-                this.donotReceiveMessageTimer = null;
-              }, 1000);
+              this.donotReceiveMessageTimer = null;
+            } else {
+              const judgement = this.judge.judge(message, this.currentTestCase);
+              switch (judgement) {
+                case 0:
+                  console.log('测试失败');
+                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                  this.testCaseList[this.currentTestCase.index].result = '失败';
+                  this.switchToNextTestCase();
+                  break;
+                case 1:
+                  console.log('测试成功');
+                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                  this.testCaseList[this.currentTestCase.index].result = '成功';
+                  this.switchToNextTestCase();
+                  break;
+                case 2:
+                  console.log('测试进行中');
+                  break;
+                default:
+                  break;
+              }
+              if (this.currentTestCase.name === 'DP.4001') {
+                clearTimeout(this.donotReceiveMessageTimer);
+                this.donotReceiveMessageTimer = setTimeout(() => {
+                  this.testCaseList[this.currentTestCase.index].result = '成功';
+                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                  this.switchToNextTestCase();
+                  this.donotReceiveMessageTimer = null;
+                }, 1000);
+              }
             }
           }
+          this.$db.message.insert(message, (err, doc) => {
+            this.messageBuffer.push(doc);
+            // this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
+          });
         }
-        this.$db.message.insert(message, (err, doc) => {
-          this.messageTable.push(doc);
-          this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
-        });
       }
     },
 
     onClickOpen() {
-      // if (!this.link.listened) {
-      //   this.createTCPServer();
-      // } else {
-      //   if (this.socket) {
-      //     this.socket.destroy();
-      //   }
-      //   this.server.close();
-      // }
       if (this.open) {
         this.port.close((err) => {
           if (err) {
@@ -220,7 +232,7 @@ export default {
             this.port = port;
           }
         });
-        const parser = port.pipe(new InterByteTimeout({ interval: 20, maxBufferSize: 32 }));
+        const parser = port.pipe(new InterByteTimeout({ interval: 30, maxBufferSize: 32 }));
         parser.on('data', this.reciveProcess);
       }
     },
@@ -269,6 +281,8 @@ export default {
         this.resetCurrentProgram();
         this.currentTestCase = this.testCaseList[0];
         this.testCaseList[0].status = '正在测试';
+        this.precondition = false;
+        this.sendTestCaseCmd(this.currentTestCase);
         this.cannotReceiveMessageTimer = setTimeout(() => {
           this.testState = false;
           this.$message.error('5s内未收到报文，请检查通讯是否正常');
@@ -300,6 +314,8 @@ export default {
       } else {
         this.currentTestCase = this.testCaseList[index + 1];
         this.testCaseList[index + 1].status = '正在测试';
+        this.sendTestCaseCmd(this.currentTestCase);
+        this.precondition = false;
         if (this.currentTestCase.name === 'DN.2009') {
           this.donotReceiveMessageTimer = setTimeout(() => {
             this.testCaseList[this.currentTestCase.index].result = '成功';
@@ -317,6 +333,19 @@ export default {
         }
       }
     },
+
+    sendTestCaseCmd(testCase) {
+      const param = Buffer.from(testCase.param, 'hex');
+      const header = Buffer.alloc(5);
+      header[0] = 0xAA;
+      header[1] = 0x55;
+      header[2] = 2 + param.length;
+      header[3] = testCase.id >> 8;
+      header[4] = testCase.id & 0xFF;
+      const checksum = Buffer.alloc(1);
+      const sendBuf = Buffer.concat([header, param, checksum]);
+      this.port.write(sendBuf);
+    },
   },
 
   mounted() {
@@ -332,6 +361,11 @@ export default {
       },
       (err) => console.error(err),
     );
+
+    setInterval(() => {
+      this.messageTable.push(...this.messageBuffer);
+      this.messageBuffer = [];
+    }, 500);
   },
 };
 </script>

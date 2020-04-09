@@ -1,6 +1,6 @@
 const TestCase = {
   DP1001: {
-    id: 1,
+    id: 11001,
     name: 'DP.1001',
     description: '检测CHM报文',
     param: '',
@@ -10,7 +10,7 @@ const TestCase = {
     report: true,
   },
   DP1002: {
-    id: 2,
+    id: 11002,
     name: 'DP.1002',
     description: '检测CRM报文, 不能辨识BMS',
     param: 'AC0D', // 最高允许充电总电压: 350.0V
@@ -20,7 +20,7 @@ const TestCase = {
     report: true,
   },
   DP1003: {
-    id: 3,
+    id: 11003,
     name: 'DP.1003',
     description: '检测CRM报文, 能辨识BMS',
     param: '00010101AC0DAC0D31323334', // BMS通信协议版本号: V1.1, 电池类型: 铅酸电池, 整车动力蓄电池系统额定容量: 350.0Ah,
@@ -31,7 +31,7 @@ const TestCase = {
     report: true,
   },
   DN1001: {
-    id: 4,
+    id: 1001,
     name: 'DN.1001',
     description: 'BMS辨识异常, BMS停止发送',
     param: '',
@@ -41,7 +41,7 @@ const TestCase = {
     report: true,
   },
   DN1002: {
-    id: 5,
+    id: 1002,
     name: 'DN.1002',
     description: 'BMS辨识异常, 异常发送BRM',
     param: '00010101AC0DAC0D31323334',
@@ -51,7 +51,7 @@ const TestCase = {
     report: true,
   },
   DN1003: {
-    id: 6,
+    id: 1003,
     name: 'DN.1003',
     description: 'BMS辨识异常',
     param: 'AC0D', // 最高允许充电总电压: 350.0V
@@ -61,7 +61,7 @@ const TestCase = {
     report: true,
   },
   DN1004: {
-    id: 7,
+    id: 1004,
     name: 'DN.1004',
     description: '无法进入充电配置阶段',
     param: '00010101AC0DAC0D31323334',
@@ -71,7 +71,7 @@ const TestCase = {
     report: true,
   },
   DP2001: {
-    id: 8,
+    id: 12001,
     name: 'DP.2001',
     description: '检测CML报文',
     param: 'AC0DAC0DAC0DAC0D96F401AC0D', // 单体动力蓄电池最高允许充电电压: 35.00V, 最高允许充电电流: 50.0A, 动力蓄电池标称总能量: 350.0kW.h,
@@ -82,7 +82,7 @@ const TestCase = {
     report: true,
   },
   DP2002: {
-    id: 9,
+    id: 12002,
     name: 'DP.2002',
     description: '发送BRO 0x00',
     param: '',
@@ -92,7 +92,7 @@ const TestCase = {
     report: true,
   },
   DP2003: {
-    id: 10,
+    id: 12003,
     name: 'DP.2003',
     description: '发送BRO 0xAA',
     param: '',
@@ -102,7 +102,7 @@ const TestCase = {
     report: true,
   },
   DN2001: {
-    id: 11,
+    id: 2001,
     name: 'DN.2001',
     description: '停止发送报文',
     param: '',
@@ -112,7 +112,7 @@ const TestCase = {
     report: true,
   },
   DN2002: {
-    id: 12,
+    id: 2002,
     name: 'DN.2002',
     description: '停止发送BCP',
     param: '',
@@ -122,7 +122,7 @@ const TestCase = {
     report: true,
   },
   DN2003: {
-    id: 13,
+    id: 2003,
     name: 'DN.2003',
     description: '停止发送报文',
     param: '',
@@ -132,7 +132,7 @@ const TestCase = {
     report: true,
   },
   DN2004: {
-    id: 14,
+    id: 2004,
     name: 'DN.2004',
     description: '发送错误的BRO',
     param: '',
@@ -142,7 +142,7 @@ const TestCase = {
     report: true,
   },
   DN2005: {
-    id: 15,
+    id: 2005,
     name: 'DN.2005',
     description: '发送BRO != 0xAA',
     param: '',
@@ -152,7 +152,7 @@ const TestCase = {
     report: true,
   },
   DN2006: {
-    id: 16,
+    id: 2006,
     name: 'DN.2006',
     description: '发送BCP',
     param: '',
@@ -162,7 +162,7 @@ const TestCase = {
     report: true,
   },
   DN2007: {
-    id: 17,
+    id: 2007,
     name: 'DN.2007',
     description: '停止发送报文',
     param: '',
@@ -172,7 +172,7 @@ const TestCase = {
     report: true,
   },
   DN2008: {
-    id: 18,
+    id: 2008,
     name: 'DN.2008',
     description: '发送错误BRO',
     param: '',
@@ -182,7 +182,7 @@ const TestCase = {
     report: true,
   },
   DN2009: {
-    id: 19,
+    id: 2009,
     name: 'DN.2009',
     description: '发送BRO = 0x00',
     param: '',
@@ -192,7 +192,7 @@ const TestCase = {
     report: true,
   },
   DN2010: {
-    id: 20,
+    id: 2010,
     name: 'DN.2010',
     description: '发送BRO = 0xAA',
     param: '',
@@ -202,7 +202,7 @@ const TestCase = {
     report: true,
   },
   DP3001: {
-    id: 21,
+    id: 13001,
     name: 'DP.3001',
     description: '发送BCS BCL',
     param: '',
@@ -212,7 +212,7 @@ const TestCase = {
     report: true,
   },
   DP3002: {
-    id: 22,
+    id: 13002,
     name: 'DP.3002',
     description: '发送BMV BMT BSP',
     param: '',
@@ -222,7 +222,7 @@ const TestCase = {
     report: true,
   },
   DP3003: {
-    id: 23,
+    id: 13003,
     name: 'DP.3003',
     description: '发送BSM',
     param: '',
@@ -232,7 +232,7 @@ const TestCase = {
     report: true,
   },
   DP3004: {
-    id: 24,
+    id: 13004,
     name: 'DP.3004',
     description: '发送BSM',
     param: '',
@@ -242,7 +242,7 @@ const TestCase = {
     report: true,
   },
   DP3005: {
-    id: 25,
+    id: 13005,
     name: 'DP.3005',
     description: '发送BSM',
     param: '',
@@ -252,7 +252,7 @@ const TestCase = {
     report: true,
   },
   DP3006: {
-    id: 26,
+    id: 13006,
     name: 'DP.3006',
     description: '发送BST',
     param: '',
@@ -262,7 +262,7 @@ const TestCase = {
     report: true,
   },
   DP3007: {
-    id: 27,
+    id: 13007,
     name: 'DP.3007',
     description: '停止充电',
     param: '',
@@ -272,7 +272,7 @@ const TestCase = {
     report: true,
   },
   DN3001: {
-    id: 28,
+    id: 3001,
     name: 'DN.3001',
     description: '停止发送BRO 发送BCL 不发送BCS',
     param: '',
@@ -282,7 +282,7 @@ const TestCase = {
     report: true,
   },
   DN3002: {
-    id: 29,
+    id: 3002,
     name: 'DN.3002',
     description: '停止发送BRO 发送BCS 不发送BCL',
     param: '',
@@ -292,7 +292,7 @@ const TestCase = {
     report: true,
   },
   DN3003: {
-    id: 30,
+    id: 3003,
     name: 'DN.3003',
     description: '停止发送BRO 发送BCL 不发送BCS',
     param: '',
@@ -302,7 +302,7 @@ const TestCase = {
     report: true,
   },
   DN3004: {
-    id: 31,
+    id: 3004,
     name: 'DN.3004',
     description: '停止发送BRO 发送BCS 发送错误BCL',
     param: '',
@@ -312,7 +312,7 @@ const TestCase = {
     report: true,
   },
   DN3005: {
-    id: 32,
+    id: 3005,
     name: 'DN.3005',
     description: '发送BCL 不发送BCS',
     param: '',
@@ -322,7 +322,7 @@ const TestCase = {
     report: true,
   },
   DN3006: {
-    id: 33,
+    id: 3006,
     name: 'DN.3006',
     description: '发送BCS 不发送BCL',
     param: '',
@@ -332,7 +332,7 @@ const TestCase = {
     report: true,
   },
   DN3007: {
-    id: 34,
+    id: 3007,
     name: 'DN.3007',
     description: '发送BCL 不发送BCS',
     param: '',
@@ -342,7 +342,7 @@ const TestCase = {
     report: true,
   },
   DN3008: {
-    id: 35,
+    id: 3008,
     name: 'DN.3008',
     description: '发送BCS 发送错误BCL',
     param: '',
@@ -352,7 +352,7 @@ const TestCase = {
     report: true,
   },
   DN3009: {
-    id: 36,
+    id: 3009,
     name: 'DN.3009',
     description: '停止发送报文',
     param: '',
@@ -362,7 +362,7 @@ const TestCase = {
     report: true,
   },
   DN3010: {
-    id: 37,
+    id: 3010,
     name: 'DN.3010',
     description: '发送错误BST',
     param: '',
@@ -372,7 +372,7 @@ const TestCase = {
     report: true,
   },
   DP4001: {
-    id: 38,
+    id: 14001,
     name: 'DP.4001',
     description: '停止发送BST 发送BSD',
     param: '',
@@ -382,7 +382,7 @@ const TestCase = {
     report: true,
   },
   DP4002: {
-    id: 39,
+    id: 14002,
     name: 'DP.4002',
     description: '重新开始充电',
     param: '',
@@ -392,7 +392,7 @@ const TestCase = {
     report: true,
   },
   DN4001: {
-    id: 40,
+    id: 4001,
     name: 'DN.4001',
     description: '停止发送报文',
     param: '',
@@ -402,7 +402,7 @@ const TestCase = {
     report: true,
   },
   DN4002: {
-    id: 41,
+    id: 4002,
     name: 'DN.4002',
     description: '发送错误BSD',
     param: '',
@@ -412,7 +412,7 @@ const TestCase = {
     report: true,
   },
   DN4003: {
-    id: 42,
+    id: 4003,
     name: 'DN.4003',
     description: '停止发送报文',
     param: '',
@@ -422,7 +422,7 @@ const TestCase = {
     report: true,
   },
   DN4004: {
-    id: 43,
+    id: 4004,
     name: 'DN.4004',
     description: '发送错误BSD',
     param: '',
