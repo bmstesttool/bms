@@ -64,7 +64,7 @@
           </el-table>
         </el-tab-pane>
         <el-tab-pane label="报文翻译" name="translation">
-          <el-table
+          <!-- <el-table
             :data="messageTable"
             ref="messageTable"
             size="mini"
@@ -82,7 +82,27 @@
             <el-table-column label="数据长度" prop="dataLength" width="70" align="center"></el-table-column>
             <el-table-column label="数据" prop="dataStr" width="300" show-overflow-tooltip></el-table-column>
             <el-table-column label="报文翻译" prop="text" show-overflow-tooltip></el-table-column>
-          </el-table>
+          </el-table> -->
+          <vxe-table
+            ref="messageTable"
+            size="mini"
+            border
+            height="800"
+            auto-resize
+            show-overflow
+          >
+            <vxe-table-column type="seq" title="帧序号" width="100" align="center"></vxe-table-column>
+            <vxe-table-column title="收发标志" field="flag" width="70" align="center"></vxe-table-column>
+            <vxe-table-column title="时间戳" field="time" width="180" align="center"></vxe-table-column>
+            <vxe-table-column title="帧ID" field="id" width="100" align="center">
+              <template slot-scope="scope">
+                <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+              </template>
+            </vxe-table-column>
+            <vxe-table-column title="数据长度" field="dataLength" width="70" align="center"></vxe-table-column>
+            <vxe-table-column title="数据" field="dataStr" width="300" show-overflow-tooltip></vxe-table-column>
+            <vxe-table-column title="报文翻译" field="text" show-overflow-tooltip></vxe-table-column>
+          </vxe-table>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -94,7 +114,8 @@ import Translator from '@/common/translator';
 import Judge from '@/common/judge';
 
 const SerialPort = require('serialport');
-const InterByteTimeout = require('@serialport/parser-inter-byte-timeout');
+// const InterByteTimeout = require('@serialport/parser-inter-byte-timeout');
+const Delimiter = require('@serialport/parser-delimiter');
 const net = require('net');
 
 export default {
@@ -126,7 +147,6 @@ export default {
       firstReceiveMessageTimer: null,
       testState: false,
       precondition: false,
-      messageBuffer: [],
     };
   },
 
@@ -202,7 +222,7 @@ export default {
             }
           }
           this.$db.message.insert(message, (err, doc) => {
-            this.messageBuffer.push(doc);
+            this.messageTable.push(doc);
             // this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
           });
         }
@@ -221,7 +241,7 @@ export default {
         });
       } else if (this.channel !== null) {
         const port = new SerialPort(this.channel.path, {
-          baudRate: 115200,
+          baudRate: 57600,
           autoOpen: false,
         });
         port.open((err) => {
@@ -232,7 +252,8 @@ export default {
             this.port = port;
           }
         });
-        const parser = port.pipe(new InterByteTimeout({ interval: 30, maxBufferSize: 32 }));
+        // const parser = port.pipe(new InterByteTimeout({ interval: 30, maxBufferSize: 32 }));
+        const parser = port.pipe(new Delimiter({ delimiter: '\r\n' }));
         parser.on('data', this.reciveProcess);
       }
     },
@@ -352,7 +373,7 @@ export default {
     this.$db.message.find({}).sort({ time: 1 }).exec((err, docs) => {
       this.messageTable = docs;
     });
-    this.$db.message.remove({}, { multi: true });
+    // this.$db.message.remove({}, { multi: true });
     this.updateProgramList();
 
     SerialPort.list().then(
@@ -363,8 +384,8 @@ export default {
     );
 
     setInterval(() => {
-      this.messageTable.push(...this.messageBuffer);
-      this.messageBuffer = [];
+      this.$refs.messageTable.loadData(this.messageTable);
+      // this.$refs.messageTable.scrollToRow(this.messageTable[this.messageTable.length - 1]);
     }, 500);
   },
 };
