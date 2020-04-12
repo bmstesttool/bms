@@ -16,6 +16,10 @@
         <i class="el-icon-check"></i>
         <span slot="title">程序测试</span>
       </el-menu-item>
+      <el-menu-item index="/history" @click="$router.push('history')">
+        <i class="el-icon-check"></i>
+        <span slot="title">历史记录</span>
+      </el-menu-item>
     </el-menu>
   </div>
 </template>

@@ -28,6 +28,15 @@ class Message {
   // 翻译报文
   text;
 
+  // 所属测试例编号
+  testCaseID;
+
+  // 所属测试例名称
+  testCaseName;
+
+  // 测试编号
+  testID;
+
   constructor(code) {
     const date = new Date();
     this.time = moment(date).format('YYYY-MM-DD HH:mm:ss.SSS');

@@ -7,6 +7,8 @@
       show-header-overflow
       show-overflow
       highlight-hover-row
+      height="850"
+      max-height="850"
       resizable
       size="small"
     >

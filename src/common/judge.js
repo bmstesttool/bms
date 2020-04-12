@@ -90,17 +90,19 @@ class Judge {
       this.result = ONGOING;
       this.lastMessage = message;
     } else if (now.valueOf() - this.firstMessageTimestamp >= duration) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - interval) < interval * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - interval) < interval * 0.2) {
         this.result = SUCCESS;
         this.reset();
       } else {
+        // console.log(`judgeInterval,时间戳:${message.timestampjudgeInterval}，${duration}后，报文周期有误${message}`);
         this.result = ERROR;
         this.reset();
       }
-    } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - interval) < interval * 0.1) {
+    } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - interval) < interval * 0.2) {
       this.result = ONGOING;
       this.lastMessage = message;
     } else {
+      // console.log(`judgeInterval,时间戳:${message.timestampjudgeInterval}，${duration}前，报文周期有误${message}`);
       this.result = ERROR;
       this.reset();
     }
@@ -112,19 +114,23 @@ class Judge {
         this.judgeInterval(message, 250, 5000);
       } else {
         this.result = ERROR;
+        // console.log(`报文不正确${message}`);
         this.reset();
       }
     } else {
+      // console.log(`报文不正确${message}`);
       this.result = ERROR;
       this.reset();
     }
   }
 
+  // OK
   judgeDP1002 = (message) => {
     if (message.id === PGN.CHM.id) {
-      if (message.data[0] === 0x00 && message.data[1] === 0x01 && message.data[2] === 0x01) {
+      if (message.data[0] === 0x01 && message.data[1] === 0x01 && message.data[2] === 0x00) {
         this.judgeInterval(message, 250, 5000);
       } else {
+        // console.log(`报文不正确${message}`);
         this.result = ERROR;
         this.reset();
       }
@@ -135,29 +141,41 @@ class Judge {
         }
         this.judgeInterval(message, 250, 5000);
       } else {
+        // console.log(`报文不正确${message}`);
         this.result = ERROR;
         this.reset();
       }
+    } else if (message.id === PGN.CEM.id) {
+      this.result = SUCCESS;
+      this.reset();
     } else {
+      // console.log(`报文不正确${message}`);
       this.result = ERROR;
       this.reset();
     }
   }
 
+  // OK
   judgeDP1003 = (message) => {
     if (message.id === PGN.CRM.id) {
       if (message.data[0] === 0xAA) {
         this.judgeInterval(message, 250, 5000);
       } else {
+        // console.log(`报文不正确${message}`);
         this.result = ERROR;
         this.reset();
       }
+    } else if (message.id === PGN.CEM.id) {
+      this.result = SUCCESS;
+      this.reset();
     } else {
+      // console.log(`报文不正确${message}`);
       this.result = ERROR;
       this.reset();
     }
   }
 
+  // OK
   judgeDN1001 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -166,44 +184,70 @@ class Judge {
         this.lastMessage = message;
         this.result = ONGOING;
       } else {
+        // console.log(`报文不正确${message}`);
         this.result = ERROR;
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
-      if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (message.id === PGN.CEM.id) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
+          // console.log(`10s后报文周期出错${message}`);
           this.result = ERROR;
           this.reset();
         }
       } else {
+        // console.log(`报文内容出错${message}`);
         this.result = ERROR;
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+        if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
+          this.result = ONGOING;
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = ERROR;
+          this.reset();
+        }
+      } else {
+        // console.log(`报文内容出错${message}`);
+        this.result = ERROR;
+        this.reset();
+      }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
       if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
         this.result = ONGOING;
         this.lastMessage = message;
+      } else if (message.id === PGN.CRM.id && message.data[0] === 0x00) {
+        this.result = ONGOING;
+        this.lastMessage = message;
       } else {
+        // console.log(`报文内容出错${message}`);
         this.result = ERROR;
         this.reset();
       }
     } else if (message.id === PGN.CRM.id && message.data[0] === 0x00) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
+        // console.log(`10s前报文周期出错${message}`);
         this.result = ERROR;
         this.reset();
       }
     } else {
+      // console.log(`报文内容出错${message}`);
       this.result = ERROR;
       this.reset();
     }
   }
 
+  // OK
   judgeDN1004 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -212,39 +256,58 @@ class Judge {
         this.lastMessage = message;
         this.result = ONGOING;
       } else {
+        // console.log(`报文不正确${message}`);
         this.result = ERROR;
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
+          // console.log(`10s后报文周期出错${message}`);
           this.result = ERROR;
           this.reset();
         }
       } else {
+        // console.log(`报文不正确${message}`);
         this.result = ERROR;
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
+        // console.log(`报文不正确${message}`);
+        this.result = ERROR;
+        this.reset();
+      }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
+      if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        // console.log(`报文内容出错${message}`);
         this.result = ERROR;
         this.reset();
       }
     } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
+        // console.log(`10s前报文周期出错${message}`);
         this.result = ERROR;
         this.reset();
       }
     } else {
+      // console.log(`报文不正确${message}`);
       this.result = ERROR;
       this.reset();
     }
@@ -256,6 +319,7 @@ class Judge {
       if (this.lastMessage === null) {
         this.result = ONGOING;
       } else {
+        // console.log(`报文不正确${message}`);
         this.result = ERROR;
         this.reset();
       }
@@ -265,14 +329,14 @@ class Judge {
         this.lastMessage = message;
         this.result = ONGOING;
       } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
           this.result = ERROR;
           this.reset();
         }
-      } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -280,7 +344,7 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
-      if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.1)) {
+      if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
         this.lastMessage2 = message;
         this.result = ONGOING;
       } else {
@@ -293,6 +357,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDP2002 = (message) => {
     const now = new Date();
     if (message.id === PGN.CML.id) {
@@ -301,14 +366,14 @@ class Judge {
         this.lastMessage = message;
         this.result = ONGOING;
       } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
           this.result = ERROR;
           this.reset();
         }
-      } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -316,7 +381,7 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
-      if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.1)) {
+      if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
         this.lastMessage2 = message;
         this.result = ONGOING;
       } else {
@@ -329,6 +394,7 @@ class Judge {
     }
   }
 
+  // 跳过了CRO 00 的兼容
   judgeDP2003 = (message) => {
     const now = new Date();
     if (message.id === PGN.CML.id || message.id === PGN.CTS.id) {
@@ -347,7 +413,7 @@ class Judge {
         } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
           this.result = ERROR;
           this.reset();
-        } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.lastMessage = message;
           this.result = ONGOING;
         }
@@ -357,14 +423,14 @@ class Judge {
           this.firstMessageTimestamp = now.valueOf();
           this.result = ONGOING;
         } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
-          if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+          if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
             this.result = SUCCESS;
             this.reset();
           } else {
             this.result = ERROR;
             this.reset();
           }
-        } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.lastMessage = message;
           this.result = ONGOING;
         } else {
@@ -378,6 +444,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDN2001 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -391,7 +458,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -402,7 +469,7 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
         this.result = ONGOING;
         this.lastMessage = message;
@@ -410,8 +477,21 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4000) {
+      if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        // console.log(`报文内容出错${message}`);
+        this.result = ERROR;
+        this.reset();
+      }
     } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -424,6 +504,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDN2003 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -440,7 +521,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -451,7 +532,7 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
         this.result = ONGOING;
         this.lastMessage = message;
@@ -459,8 +540,24 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
+      if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CML.id) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CTS.id) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        // console.log(`报文内容出错${message}`);
+        this.result = ERROR;
+        this.reset();
+      }
     } else if (message.id === PGN.CML.id) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -468,9 +565,9 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
-      if (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.1) {
-        this.result = ONGOING;
+      if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
         this.lastMessage2 = message;
+        this.result = ONGOING;
       } else {
         this.result = ERROR;
         this.reset();
@@ -481,6 +578,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDN2005 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -497,33 +595,9 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 65000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
-        } else {
-          this.result = ERROR;
-          this.reset();
-        }
-      } else if (now.valueOf() - this.firstMessageTimestamp >= 60000) {
-        if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-          this.result = ONGOING;
-          this.lastMessage = message;
-        } else {
-          this.result = ERROR;
-          this.reset();
-        }
-      } else if (message.id === PGN.CML.id) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
-          this.result = ONGOING;
-          this.lastMessage = message;
-        } else {
-          this.result = ERROR;
-          this.reset();
-        }
-      } else if (message.id === PGN.CTS.id) {
-        if (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.1) {
-          this.result = ONGOING;
-          this.lastMessage2 = message;
         } else {
           this.result = ERROR;
           this.reset();
@@ -532,6 +606,49 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 61000) {
+      if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        this.result = ERROR;
+        this.reset();
+      }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 59000) {
+      if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CML.id) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CTS.id) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        // console.log(`报文内容出错${message}`);
+        this.result = ERROR;
+        this.reset();
+      }
+    } else if (message.id === PGN.CML.id) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        this.result = ERROR;
+        this.reset();
+      }
+    } else if (message.id === PGN.CTS.id) {
+      if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
+        this.lastMessage2 = message;
+        this.result = ONGOING;
+      } else {
+        this.result = ERROR;
+        this.reset();
+      }
+    } else {
+      this.result = ERROR;
+      this.reset();
     }
   }
 
@@ -548,7 +665,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -559,7 +676,7 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
         this.result = ONGOING;
         this.lastMessage = message;
@@ -567,8 +684,21 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
+      if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CRO.id && message.data[0] === 0x00) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        // console.log(`报文内容出错${message}`);
+        this.result = ERROR;
+        this.reset();
+      }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0x00) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -581,6 +711,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDN2010 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -594,7 +725,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 6000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -605,16 +736,29 @@ class Judge {
         this.result = ERROR;
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 1000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 1500) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
         this.result = ERROR;
         this.reset();
+      }  
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 500) {
+      if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
+        this.result = ONGOING;
+        this.lastMessage = message;
+      } else {
+        // console.log(`报文内容出错${message}`);
+        this.result = ERROR;
+        this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -627,6 +771,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDP3001 = (message) => {
     const now = new Date();
     if (message.id === PGN.CRO.id) {
@@ -641,15 +786,15 @@ class Judge {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
         this.result = ONGOING;
-      } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.1) {
+      } else if (now.valueOf() - this.firstMessageTimestamp >= 3000) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
           this.result = ERROR;
           this.reset();
         }
-      } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.1) {
+      } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
         this.lastMessage = message;
         this.result = ONGOING;
       }
@@ -813,7 +958,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -833,7 +978,7 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -859,7 +1004,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 6000) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -879,7 +1024,7 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -905,7 +1050,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -925,7 +1070,7 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -951,7 +1096,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -971,7 +1116,7 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CCS.id) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -997,7 +1142,7 @@ class Judge {
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 6000) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.1) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
           this.result = SUCCESS;
           this.reset();
         } else {
@@ -1017,7 +1162,7 @@ class Judge {
         this.reset();
       }
     } else if (message.id === PGN.CCS.id) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.1) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
         this.result = ONGOING;
         this.lastMessage = message;
       } else {
@@ -1083,7 +1228,7 @@ class Judge {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
         this.result = ONGOING;
-      } else if (now.valueOf() - this.firstMessageTimestamp - 250 < 250 * 0.1) {
+      } else if (now.valueOf() - this.firstMessageTimestamp - 250 < 250 * 0.2) {
         this.lastMessage = message;
         this.result = ONGOING;
       } else {

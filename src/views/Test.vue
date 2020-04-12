@@ -25,6 +25,7 @@
         <el-checkbox v-model="capture" style="margin-left: 10px;">允许CAN报文捕获</el-checkbox>
         <span style="margin-left: 20px;">请选择测试程序: </span>
         <el-select
+          class="programSelect"
           v-model="currentProgram"
           placeholder="请选择"
           size="mini"
@@ -40,6 +41,8 @@
           </el-option>
         </el-select>
         <el-button type="primary" size="mini" @click="onClickStartTest" :disabled="!open || !currentProgram">{{testState ? '结束测试' : '开始测试'}}</el-button>
+        <el-button type="primary" size="mini" @click="clearMessageSql">清空数据库</el-button>
+        <el-button type="primary" size="mini" @click="addMessageSql">添加数据</el-button>
       </div>
     </div>
     <div class="message-area">
@@ -85,6 +88,7 @@
           </el-table> -->
           <vxe-table
             ref="messageTable"
+            :data="messageTable"
             size="mini"
             border
             height="800"
@@ -147,6 +151,9 @@ export default {
       firstReceiveMessageTimer: null,
       testState: false,
       precondition: false,
+      nedbLastTestID: 0,
+      currentTestID: -1,
+      messageSaveFlag: 0, // 0-代表默认状态，1-代表正在存储，2-代表存储完成
     };
   },
 
@@ -166,6 +173,9 @@ export default {
             this.precondition = true;
             break;
           default:
+            if (this.cannotReceiveMessageTimer != null) {
+              clearTimeout(this.cannotReceiveMessageTimer);
+            }
             break;
         }
       } else {
@@ -221,10 +231,14 @@ export default {
               }
             }
           }
-          this.$db.message.insert(message, (err, doc) => {
-            this.messageTable.push(doc);
-            // this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
-          });
+          message.testCaseID = this.currentTestCase.id;
+          message.testCaseName = this.currentTestCase.name;
+          if (this.currentTestID === -1) {
+            this.currentTestID = this.nedbLastTestID + 1;
+          }
+          message.testID = this.currentTestID;
+          // console.log('当前测试testID:'.concat(this.currentTestID));
+          this.messageTable.push(message);
         }
       }
     },
@@ -241,7 +255,7 @@ export default {
         });
       } else if (this.channel !== null) {
         const port = new SerialPort(this.channel.path, {
-          baudRate: 57600,
+          baudRate: 19200,
           autoOpen: false,
         });
         port.open((err) => {
@@ -297,8 +311,15 @@ export default {
         this.resetCurrentProgram();
         this.currentTestCase = {};
         clearTimeout(this.cannotReceiveMessageTimer);
-      } else {
+        this.handleMessageTable();
+      } else if (!this.testState && this.messageSaveFlag !== 1) {
         this.testState = true;
+        // 添加当前测试编号
+        if (this.currentTestID === -1) {
+          this.currentTestID = this.nedbLastTestID + 1;
+        }
+        this.messageTable = [];
+        this.messageSaveFlag = 0;
         this.resetCurrentProgram();
         this.currentTestCase = this.testCaseList[0];
         this.testCaseList[0].status = '正在测试';
@@ -309,7 +330,10 @@ export default {
           this.$message.error('5s内未收到报文，请检查通讯是否正常');
           this.testCaseList[0].result = '失败';
           this.testCaseList[0].status = '测试完成';
+          this.handleMessageTable();
         }, 5000);
+      } else {
+        this.$message.error('正在存储上次测试结果，请稍后再试');
       }
     },
 
@@ -332,6 +356,7 @@ export default {
       const index = this.currentTestCase.index;
       if (index + 1 >= this.testCaseList.length) {
         this.testState = false;
+        this.handleMessageTable();
       } else {
         this.currentTestCase = this.testCaseList[index + 1];
         this.testCaseList[index + 1].status = '正在测试';
@@ -350,6 +375,7 @@ export default {
             this.$message.error('5s内未收到报文，请检查通讯是否正常');
             this.testCaseList[0].result = '失败';
             this.testCaseList[0].status = '测试完成';
+            this.handleMessageTable();
           }, 5000);
         }
       }
@@ -365,14 +391,85 @@ export default {
       header[4] = testCase.id & 0xFF;
       const checksum = Buffer.alloc(1);
       const sendBuf = Buffer.concat([header, param, checksum]);
+      console.log(sendBuf.toString('hex'));
       this.port.write(sendBuf);
+    },
+
+    clearMessageSql() {
+      this.$db.message.remove({}, { multi: true });
+    },
+
+    addMessageSql() {
+      const message = {
+        testID: 1,
+        testCaseID: '11001',
+        testCaseName: 'DP.1001',
+        id: 1,
+        code: '',
+        flag: '发送',
+        time: new Date(),
+        timestamp: '',
+        dataLength: 2,
+        data: 123,
+        dataStr: 123,
+        text: 1,
+      };
+      message.testID = 1;
+      message.testCaseID = '11001';
+      message.testCaseName = 'DP.1001';
+      message.text = 'TEST1';
+      this.$db.message.insert(message, () => {
+        message.text = 'TEST2';
+        this.$db.message.insert(message, () => {
+          // this.messageTable.push(doc);
+          message.text = 'TEST3';
+          this.$db.message.insert(message, () => {
+            message.testID = 2;
+            message.testCaseID = '11002';
+            message.testCaseName = 'DP.1002';
+            message.text = 'TEST1';
+            this.$db.message.insert(message, () => {
+              message.text = 'TEST2';
+              this.$db.message.insert(message, () => {
+                message.text = 'TEST3';
+                this.$db.message.insert(message, () => {
+                  message.testID = 3;
+                  message.testCaseID = '11003';
+                  message.testCaseName = 'DP.1003';
+                  message.text = 'TEST1';
+                  this.$db.message.insert(message, () => {
+                    message.text = 'TEST2';
+                    this.$db.message.insert(message, () => {
+                      message.text = 'TEST3';
+                      this.$db.message.insert(message, () => {
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    },
+
+    handleMessageTable() {
+      if (this.messageSaveFlag !== 1) {
+        this.messageSaveFlag = 1;
+        this.$db.message.insert(this.messageTable, () => {
+          // this.messageTable.push(doc);
+          this.messageSaveFlag = 2;
+          this.$message.info('上次测试结果存储完成');
+          // this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
+        });
+      }
     },
   },
 
   mounted() {
-    this.$db.message.find({}).sort({ time: 1 }).exec((err, docs) => {
-      this.messageTable = docs;
-    });
+    // this.$db.message.find({}).sort({ time: 1 }).exec((err, docs) => {
+    //   this.messageTable = docs;
+    // });
     // this.$db.message.remove({}, { multi: true });
     this.updateProgramList();
 
@@ -383,10 +480,34 @@ export default {
       (err) => console.error(err),
     );
 
-    setInterval(() => {
-      this.$refs.messageTable.loadData(this.messageTable);
-      // this.$refs.messageTable.scrollToRow(this.messageTable[this.messageTable.length - 1]);
-    }, 500);
+    this.$db.message.find({}).sort({ testID: -1 }).limit(1).exec((err, docs) => {
+      if (err === null) {
+        if (docs.length > 0) {
+          this.nedbLastTestID = docs[0].testID;
+        } else {
+          // 第一次测试
+          this.nedbLastTestID = 0;
+        }
+        this.currentTestID = this.nedbLastTestID + 1;
+      }
+    });
+
+    // setInterval(() => {
+    //   this.$refs.messageTable.loadData(this.messageTable);
+    //   // this.$refs.messageTable.scrollToRow(this.messageTable[this.messageTable.length - 1]);
+    // }, 500);
+  },
+  destroyed() {
+    if (this.open) {
+      this.port.close((err) => {
+        if (err) {
+          this.$message.error(`关闭串口${this.channel.path}失败！`);
+        } else {
+          this.open = false;
+          this.port = null;
+        }
+      });
+    }
   },
 };
 </script>
@@ -409,5 +530,9 @@ export default {
   width: 100%;
   top: 40px;
   bottom: 40px;
+}
+
+.programSelect {
+  width: 100px;
 }
 </style>
