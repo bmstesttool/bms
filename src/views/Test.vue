@@ -41,6 +41,7 @@
           </el-option>
         </el-select>
         <el-button type="primary" size="mini" @click="onClickStartTest" :disabled="!open || !currentProgram">{{testState ? '结束测试' : '开始测试'}}</el-button>
+        <el-button type="primary" size="mini" @click="handleMessageTable">保存</el-button>
         <el-button type="primary" size="mini" @click="clearMessageSql">清空数据库</el-button>
         <el-button type="primary" size="mini" @click="addMessageSql">添加数据</el-button>
       </div>
@@ -96,16 +97,18 @@
             show-overflow
           >
             <vxe-table-column type="seq" title="帧序号" width="100" align="center"></vxe-table-column>
+            <vxe-table-column title="报文标签" field="messageLabel" width="50" align="center"></vxe-table-column>
             <vxe-table-column title="收发标志" field="flag" width="70" align="center"></vxe-table-column>
             <vxe-table-column title="时间戳" field="time" width="180" align="center"></vxe-table-column>
             <vxe-table-column title="帧ID" field="id" width="100" align="center">
               <template slot-scope="scope">
-                <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+                 <span :class="scope.row.errorFlag ? 'errorMessage' : ''">0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
               </template>
             </vxe-table-column>
             <vxe-table-column title="数据长度" field="dataLength" width="70" align="center"></vxe-table-column>
             <vxe-table-column title="数据" field="dataStr" width="300" show-overflow-tooltip></vxe-table-column>
             <vxe-table-column title="报文翻译" field="text" show-overflow-tooltip></vxe-table-column>
+            <vxe-table-column title="失败原因" field="errorContent" show-overflow-tooltip></vxe-table-column>
           </vxe-table>
         </el-tab-pane>
       </el-tabs>
@@ -200,8 +203,11 @@ export default {
               clearTimeout(this.donotReceiveMessageTimer);
               this.donotReceiveMessageTimer = null;
             } else {
-              const judgement = this.judge.judge(message, this.currentTestCase);
-              switch (judgement) {
+              const judgeResult = this.judge.judge(message, this.currentTestCase);
+              message.messageLabel = judgeResult.messageLabel;
+              message.errorFlag = judgeResult.errorFlag;
+              message.errorContent = judgeResult.errorContent;
+              switch (judgeResult.testStatus) {
                 case 0:
                   console.log('测试失败');
                   this.testCaseList[this.currentTestCase.index].status = '测试完成';
@@ -413,6 +419,9 @@ export default {
         data: 123,
         dataStr: 123,
         text: 1,
+        messageLabel: 'CHM',
+        errorFlag: false,
+        errorContent: '',
       };
       message.testID = 1;
       message.testCaseID = '11001';
@@ -441,6 +450,9 @@ export default {
                     message.text = 'TEST2';
                     this.$db.message.insert(message, () => {
                       message.text = 'TEST3';
+                      message.messageLabel = 'CHM';
+                      message.errorFlag = true;
+                      message.errorContent = 'CHM报文内容错误';
                       this.$db.message.insert(message, () => {
                       });
                     });
@@ -534,5 +546,9 @@ export default {
 
 .programSelect {
   width: 100px;
+}
+
+.errorMessage {
+  background: #F56C6C;
 }
 </style>

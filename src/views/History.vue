@@ -36,12 +36,14 @@
         <vxe-table-column title="时间戳" field="time" width="180" align="center"></vxe-table-column>
         <vxe-table-column title="帧ID" field="id" width="100" align="center">
           <template slot-scope="scope">
-            <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+            <span :class="scope.row.errorFlag ? 'errorMessage' : ''">0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
           </template>
         </vxe-table-column>
+        <vxe-table-column title="报文标签" field="messageLabel" width="50" align="center"></vxe-table-column>
         <vxe-table-column title="数据长度" field="dataLength" width="70" align="center"></vxe-table-column>
         <vxe-table-column title="数据" field="dataStr" width="100" show-overflow-tooltip></vxe-table-column>
         <vxe-table-column title="报文翻译" field="text" show-overflow-tooltip></vxe-table-column>
+        <vxe-table-column title="失败原因" field="errorContent" show-overflow-tooltip></vxe-table-column>
       </vxe-table>
     </div>
   </div>
@@ -126,5 +128,9 @@ export default {
   width: 100%;
   top: 40px;
   bottom: 40px;
+}
+
+.errorMessage {
+  background: #F56C6C;
 }
 </style>

@@ -87,6 +87,7 @@ class Translator {
         message.flag = '发送';
         message.data = data.slice(4);
         message.text = `充电机报文CHM: ${PGN.CHM.description}, 充电机通信协议: V1.1`;
+        message.messageLabel = 'CHM';
         break;
       case PGN.BHM.code:
         message = new Message(PGN.BHM);
@@ -94,6 +95,7 @@ class Translator {
         message.flag = '接收';
         value = ((data[4] + (data[5] << 8)) / 10.0).toFixed(1);
         message.text = `车辆报文BHM: ${PGN.BHM.description}, 最高允许充电总电压: ${value}V`;
+        message.messageLabel = 'BHM';
         break;
       case PGN.CRM.code:
         message = new Message(PGN.CRM);
@@ -112,6 +114,7 @@ class Translator {
           value = String.fromCharCode(data[9]) + String.fromCharCode(data[10]) + String.fromCharCode(data[11]);
           message.text += `, 充电机所在区域编号: ${value}`;
         }
+        message.messageLabel = 'CRM';
         break;
       case PGN.BRM.code:
         message = new Message(PGN.BRM);
@@ -125,6 +128,7 @@ class Translator {
         message.text += `, 整车动力蓄电池系统额定容量: ${value}Ah`;
         value = ((data[10] + (data[11] << 8)) / 10.0).toFixed(1);
         message.text += `, 整车动力蓄电池系统额定总电压: ${value}V`;
+        message.messageLabel = 'BRM';
         break;
 
       // BCP只会在多包报文中出现
@@ -138,6 +142,7 @@ class Translator {
         message.text = '充电机发送时间同步信息报文CTS: '
           + `${data[10].toString(16)}${data[9].toString(16)}/${data[8].toString(16)}/${data[7].toString(16)} `
           + `${data[6].toString(16)}:${data[5].toString(16)}:${data[4].toString(16)}`;
+        message.messageLabel = 'CTS';
         break;
       case PGN.CML.code:
         message = new Message(PGN.CML);
@@ -152,6 +157,7 @@ class Translator {
         message.text += `, 最高输出电流: ${value}A`;
         value = (400 - ((data[10] + (data[11] << 8)) / 10.0)).toFixed(1);
         message.text += `, 最低输出电流: ${value}A`;
+        message.messageLabel = 'CML';
         break;
       case PGN.BRO.code:
         message = new Message(PGN.BRO);
@@ -160,6 +166,7 @@ class Translator {
         message.text = `BMS充电准备就绪报文BRO: ${PGN.BRO.description}`;
         value = this.getReadyState(data[4]);
         message.text += `, BMS是否充电准备好: ${value}`;
+        message.messageLabel = 'BRO';
         break;
       case PGN.CRO.code:
         message = new Message(PGN.CRO);
@@ -168,6 +175,7 @@ class Translator {
         message.text = `充电机输出准备就绪报文CRO: ${PGN.CRO.description}`;
         value = this.getReadyState(data[4]);
         message.text += `, 充电机是否充电准备好: ${value}`;
+        message.messageLabel = 'CRO';
         break;
       case PGN.BCL.code:
         message = new Message(PGN.BCL);
@@ -180,6 +188,7 @@ class Translator {
         message.text += `, 电流需求: ${value}A`;
         value = data[8] === 0x01 ? '恒压充电' : '恒流充电';
         message.text += `, 充电模式: ${value}`;
+        message.messageLabel = 'BCL';
         break;
 
       // BCS只会在多包报文中出现
@@ -199,6 +208,7 @@ class Translator {
         message.text += `, 累计充电时间: ${value}min`;
         value = (data[10] & 0x01) === 0x00 ? '暂停' : '允许';
         message.text += `, 充电允许: ${value}`;
+        message.messageLabel = 'CCS';
         break;
       case PGN.BSM.code:
         message = new Message(PGN.BSM);
@@ -252,6 +262,7 @@ class Translator {
           value = '允许';
         }
         message.text += `, 充电允许: ${value}`;
+        message.messageLabel = 'BSM';
         break;
 
       // 可选
@@ -259,18 +270,21 @@ class Translator {
         message = new Message(PGN.BMV);
         message.flag = '接收';
         message.text = '';
+        message.messageLabel = 'BMV';
         break;
       // 可选
       case PGN.BMT.code:
         message = new Message(PGN.BMT);
         message.flag = '接收';
         message.text = '';
+        message.messageLabel = 'BMT';
         break;
       // 可选
       case PGN.BSP.code:
         message = new Message(PGN.BSP);
         message.flag = '接收';
         message.text = '';
+        message.messageLabel = 'BSP';
         break;
 
       case PGN.BST.code:
@@ -320,6 +334,7 @@ class Translator {
         value = (data[7] & 0x0C) >> 2;
         value = this.getFaultState(value);
         message.text += `, 电压异常: ${value}`;
+        message.messageLabel = 'BST';
         break;
       case PGN.CST.code:
         message = new Message(PGN.CST);
@@ -362,6 +377,7 @@ class Translator {
         value = (data[7] & 0x0C) >> 2;
         value = this.getFaultState(value);
         message.text += `, 电压异常: ${value}`;
+        message.messageLabel = 'CST';
         break;
       case PGN.BSD.code:
         message = new Message(PGN.BSD);
@@ -378,6 +394,7 @@ class Translator {
         message.text += `, 动力蓄电池最低温度: ${value}°C`;
         value = (data[10] - 50).toString();
         message.text += `, 动力蓄电池最高温度: ${value}°C`;
+        message.messageLabel = 'BSD';
         break;
       case PGN.CSD.code:
         message = new Message(PGN.CSD);
@@ -390,6 +407,7 @@ class Translator {
         message.text += `, 输出能量: ${value}kW·h`;
         value = data[8] + (data[9] << 8) + (data[10] << 16) + (data[11] << 24) + 1;
         message.text += `, 充电机编号: ${value}`;
+        message.messageLabel = 'CSD';
         break;
       case PGN.BEM.code:
         message = new Message(PGN.BEM);
@@ -417,6 +435,7 @@ class Translator {
         value = data[7] & 0x03;
         value = this.getFaultState(value);
         message.text += `, 接收充电机充电统计报文超时: ${value}`;
+        message.messageLabel = 'BEM';
         break;
       case PGN.CEM.code:
         message = new Message(PGN.CEM);
@@ -444,6 +463,7 @@ class Translator {
         value = data[7] & 0x03;
         value = this.getFaultState(value);
         message.text += `, 接收BMS充电统计报文超时: ${value}`;
+        message.messageLabel = 'CEM';
         break;
       case PGN.TPCM.code:
         if (data[4] === 0x10) {
@@ -491,6 +511,7 @@ class Translator {
               message.text += `, 整车动力蓄电池荷电状态: ${value}%`;
               value = ((message.data[11] + (message.data[12] << 8)) / 10.0).toFixed(1);
               message.text += `, 整车动力蓄电池当前电池电压: ${value}V`;
+              message.messageLabel = 'BCP';
               this.message = null;
               break;
             case PGN.BCS.code:
@@ -510,6 +531,7 @@ class Translator {
               message.text += `, 当前荷电状态: ${value}%`;
               value = (message.data[7] + (message.data[8] << 8)).toString();
               message.text += `, 估计剩余充电时间: ${value}min`;
+              message.messageLabel = 'BCS';
               this.message = null;
               break;
             default:

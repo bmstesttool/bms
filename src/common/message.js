@@ -37,6 +37,15 @@ class Message {
   // 测试编号
   testID;
 
+  // 报文标签
+  messageLabel;
+
+  // 错误标识
+  errorFlag;
+
+  // 错误信息
+  errorContent;
+
   constructor(code) {
     const date = new Date();
     this.time = moment(date).format('YYYY-MM-DD HH:mm:ss.SSS');

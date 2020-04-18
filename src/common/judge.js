@@ -27,7 +27,12 @@ class Judge {
     this.lastMessage = null;
     this.lastMessage2 = null;
     this.lastTestCase = null;
-    this.result = ERROR;
+    this.result = {
+      messageLabel: '',
+      errorFlag: 0,
+      errorContent: '',
+      testStatus: ERROR,
+    };
     this.judgeCase = {
       [TestCase.DP1001.id]: this.judgeDP1001,
       [TestCase.DP1002.id]: this.judgeDP1002,
@@ -69,7 +74,7 @@ class Judge {
       [TestCase.DP4001.id]: this.judgeDP4001,
       // [TestCase.DP4002.id]: this.judgeDP4002, // DP4002不接受报文，暂时不处理
       [TestCase.DN4001.id]: this.judgeDN4001,
-      [TestCase.DN4002.id]: this.judgeDN4002,
+      [TestCase.DN4002.id]: this.judgeDN4001,
       [TestCase.DN4003.id]: this.judgeDN4001,
       [TestCase.DN4004.id]: this.judgeDN4001,
 
@@ -87,23 +92,48 @@ class Judge {
     const now = new Date();
     if (this.lastMessage === null) {
       this.firstMessageTimestamp = now.valueOf();
-      this.result = ONGOING;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
       this.lastMessage = message;
     } else if (now.valueOf() - this.firstMessageTimestamp >= duration) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - interval) < interval * 0.2) {
-        this.result = SUCCESS;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: SUCCESS,
+        };
         this.reset();
       } else {
         // console.log(`judgeInterval,时间戳:${message.timestampjudgeInterval}，${duration}后，报文周期有误${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - interval) < interval * 0.2) {
-      this.result = ONGOING;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
       this.lastMessage = message;
     } else {
       // console.log(`judgeInterval,时间戳:${message.timestampjudgeInterval}，${duration}前，报文周期有误${message}`);
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -113,13 +143,23 @@ class Judge {
       if (message.data[0] === 0x00 && message.data[1] === 0x01 && message.data[2] === 0x01) {
         this.judgeInterval(message, 250, 5000);
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         // console.log(`报文不正确${message}`);
         this.reset();
       }
     } else {
       // console.log(`报文不正确${message}`);
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容出错`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -131,7 +171,12 @@ class Judge {
         this.judgeInterval(message, 250, 5000);
       } else {
         // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRM.id) {
@@ -142,15 +187,30 @@ class Judge {
         this.judgeInterval(message, 250, 5000);
       } else {
         // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CEM.id) {
-      this.result = SUCCESS;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
       this.reset();
     } else {
       // console.log(`报文不正确${message}`);
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容出错`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -162,15 +222,30 @@ class Judge {
         this.judgeInterval(message, 250, 5000);
       } else {
         // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CEM.id) {
-      this.result = SUCCESS;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
       this.reset();
     } else {
       // console.log(`报文不正确${message}`);
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -182,67 +257,137 @@ class Judge {
       if (message.id === PGN.CRM.id && message.data[0] === 0x00) {
         this.firstMessageTimestamp = now.valueOf();
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
         // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
           // console.log(`10s后报文周期出错${message}`);
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
-          this.result = ONGOING;
+      if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
           this.lastMessage = message;
         } else {
           // console.log(`报文内容出错${message}`);
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
       // 报文切换过程中，增加两个周期的变换时间
     } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
       if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CRM.id && message.data[0] === 0x00) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRM.id && message.data[0] === 0x00) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`10s前报文周期出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
       // console.log(`报文内容出错${message}`);
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容出错`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -254,61 +399,137 @@ class Judge {
       if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
         this.firstMessageTimestamp = now.valueOf();
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
         // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
           // console.log(`10s后报文周期出错${message}`);
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
         // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
-        this.result = ONGOING;
-        this.lastMessage = message;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
       } else {
-        // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        // console.log(`报文内容出错${message}`);
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
       // 报文切换过程中，增加两个周期的变换时间
     } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
       if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`10s前报文周期出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
       // console.log(`报文不正确${message}`);
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容出错`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -317,42 +538,92 @@ class Judge {
     const now = new Date();
     if (message.id === PGN.CRM.id) {
       if (this.lastMessage === null) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
         // console.log(`报文不正确${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CML.id) {
       if (this.lastMessage === null) {
         this.firstMessageTimestamp = now.valueOf();
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
       if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
         this.lastMessage2 = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为500ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容出错`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -364,32 +635,72 @@ class Judge {
       if (this.lastMessage === null) {
         this.firstMessageTimestamp = now.valueOf();
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
       if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
         this.lastMessage2 = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为500ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -399,9 +710,19 @@ class Judge {
     const now = new Date();
     if (message.id === PGN.CML.id || message.id === PGN.CTS.id) {
       if (this.lastMessage === null) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRO.id) {
@@ -409,37 +730,82 @@ class Judge {
         if (this.lastMessage === null) {
           this.lastMessage = message;
           this.firstMessageTimestamp = now.valueOf();
-          this.result = ONGOING;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
         } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
-          this.result = ERROR;
+          this.result = this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文内容错误`,
+            testStatus: ERROR,
+          };
           this.reset();
         } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.lastMessage = message;
-          this.result = ONGOING;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
         }
       } else if (message.data[0] === 0xAA) {
         if (this.lastMessage.data[0] === 0x00) {
           this.lastMessage = message;
           this.firstMessageTimestamp = now.valueOf();
-          this.result = ONGOING;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
         } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
           if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-            this.result = SUCCESS;
+            this.result = {
+              messageLabel: message.messageLabel,
+              errorFlag: false,
+              errorContent: '',
+              testStatus: SUCCESS,
+            };
             this.reset();
           } else {
-            this.result = ERROR;
+            this.result = {
+              messageLabel: message.messageLabel,
+              errorFlag: true,
+              errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+              testStatus: ERROR,
+            };
             this.reset();
           }
         } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.lastMessage = message;
-          this.result = ONGOING;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -451,55 +817,131 @@ class Judge {
       if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
         this.firstMessageTimestamp = now.valueOf();
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && message.data[1] & 0x03 === 0x01) {
-        this.result = ONGOING;
-        this.lastMessage = message;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
       // 报文切换过程中，增加两个周期的变换时间
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 4000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
       if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRM.id && message.data[0] === 0xAA) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -511,69 +953,165 @@ class Judge {
       if (message.id === PGN.CML.id) {
         this.firstMessageTimestamp = now.valueOf();
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else if (message.id === PGN.CTS.id) {
         this.lastMessage2 = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
-        this.lastMessage = message;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
       // 报文切换过程中，增加两个周期的变换时间
     } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CML.id) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CTS.id) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CML.id) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
       if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
         this.lastMessage2 = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为500ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -585,69 +1123,154 @@ class Judge {
       if (message.id === PGN.CML.id) {
         this.firstMessageTimestamp = now.valueOf();
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else if (message.id === PGN.CTS.id) {
         this.lastMessage2 = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 65000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 61000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
       // 报文切换过程中，增加两个周期的变换时间
     } else if (now.valueOf() - this.firstMessageTimestamp >= 59000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CML.id) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CTS.id) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CML.id) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
       if (this.lastMessage2 === null || (Math.abs(message.timestamp - this.lastMessage2.timestamp - 500) < 500 * 0.2)) {
         this.lastMessage2 = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为500ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -658,55 +1281,131 @@ class Judge {
       if (message.id === PGN.CRO.id && message.data[0] === 0x00) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
-        this.lastMessage = message;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
       // 报文切换过程中，增加两个周期的变换时间
     } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CRO.id && message.data[0] === 0x00) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0x00) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -718,55 +1417,120 @@ class Judge {
       if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 6000) {
       if (message.id === PGN.CEM.id && (message.data[1] & 0x0C) >> 2 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 1500) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
-      }  
+      }
       // 报文切换过程中，增加两个周期的变换时间
     } else if (now.valueOf() - this.firstMessageTimestamp >= 500) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
         // console.log(`报文内容出错${message}`);
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -776,30 +1540,73 @@ class Judge {
     const now = new Date();
     if (message.id === PGN.CRO.id) {
       if (this.lastMessage === null && message.data[0] === 0xAA) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CCS.id) {
       if (this.lastMessage === null) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else if (now.valueOf() - this.firstMessageTimestamp >= 3000) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为50ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       }
+    } else if (message.id === PGN.CST.id && now.valueOf() - this.firstMessageTimestamp >= 1000) { // 可能需要加时间，以免出现CST并不是正常流程
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
+      this.reset();
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -808,76 +1615,170 @@ class Judge {
     const now = new Date();
     if (message.id === PGN.CCS.id) {
       if (this.lastMessage === null) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CST.id) {
       if (this.lastMessage === null) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
-      } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+      } else if (now.valueOf() - this.firstMessageTimestamp >= 3000) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       }
+    } else if (message.id === PGN.CST.id && now.valueOf() - this.firstMessageTimestamp >= 1000) { // 可能需要加时间，以免出现CST并不是正常流程
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
+      this.reset();
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
 
+  // 需要调整
   judgeDP3005 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
       if (message.id === PGN.CCS.id) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10 * 60 * 1000 + 5000) {
       if (message.id === PGN.CTS.id) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10 * 60 * 1000) {
       if (message.id === PGN.CTS.id) {
         if (this.lastMessage.id === PGN.CCS.id) {
           this.lastMessage = message;
-          this.result = ONGOING;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
         } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
           this.lastMessage = message;
-          this.result = ONGOING;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -886,33 +1787,73 @@ class Judge {
     const now = new Date();
     if (message.id === PGN.CCS.id) {
       if (this.lastMessage === null) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CTS.id) {
       if (this.lastMessage === null) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
-      } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+      } else if (now.valueOf() - this.firstMessageTimestamp >= 3000) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -923,24 +1864,54 @@ class Judge {
       if (this.lastMessage === null) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
-      } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+      } else if (now.valueOf() - this.firstMessageTimestamp >= 3000) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -951,42 +1922,131 @@ class Judge {
       if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
-        this.result = ONGOING;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
+        this.reset();
+      }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
+      if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+        this.lastMessage = message;
+      } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        // console.log(`报文内容出错${message}`);
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -997,42 +2057,131 @@ class Judge {
       if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 6000) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 1000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 1500) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
-        this.lastMessage = message;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
+    // 报文切换过程中，增加两个周期的变换时间
+  } else if (now.valueOf() - this.firstMessageTimestamp >= 500) {
+    if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
+      this.lastMessage = message;
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
+      this.lastMessage = message;
+    } else {
+      // console.log(`报文内容出错${message}`);
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容出错`,
+        testStatus: ERROR,
+      };
+      this.reset();
+    }
+  } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -1043,42 +2192,131 @@ class Judge {
       if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
-        this.result = ONGOING;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
+        this.reset();
+      }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
+      if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+        this.lastMessage = message;
+      } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        // console.log(`报文内容出错${message}`);
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CRO.id && message.data[0] === 0xAA) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -1089,42 +2327,131 @@ class Judge {
       if (message.id === PGN.CCS.id) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为50ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
-        this.result = ONGOING;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
+        this.reset();
+      }
+    // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
+      if (message.id === PGN.CEM.id && message.data[2] & 0x03 === 0x01) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+        this.lastMessage = message;
+      } else if (message.id === PGN.CCS.id) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        // console.log(`报文内容出错${message}`);
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CCS.id) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为50ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -1135,42 +2462,130 @@ class Judge {
       if (message.id === PGN.CCS.id) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 6000) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
-          this.result = SUCCESS;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为50ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 1000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 1500) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        this.result = ONGOING;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为50ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
+        this.reset();
+      }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 500) {
+      if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+        this.lastMessage = message;
+      } else if (message.id === PGN.CCS.id) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        // console.log(`报文内容出错${message}`);
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CCS.id) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为50ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -1181,42 +2596,131 @@ class Judge {
       if (message.id === PGN.CST.id) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x30) >> 4 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 5500) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x30) >> 4 === 0x01) {
-        this.result = ONGOING;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 50) < 50 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
+        this.reset();
+      }
+      // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 4500) {
+      if (message.id === PGN.CEM.id && (message.data[2] & 0x30) >> 4 === 0x01) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+        this.lastMessage = message;
+      } else if (message.id === PGN.CST.id) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        // console.log(`报文内容出错${message}`);
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CST.id) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -1227,16 +2731,36 @@ class Judge {
       if (this.lastMessage === null) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else if (now.valueOf() - this.firstMessageTimestamp - 250 < 250 * 0.2) {
         this.lastMessage = message;
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
@@ -1247,88 +2771,131 @@ class Judge {
       if (message.id === PGN.CST.id) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 15000) {
       if (message.id === PGN.CEM.id && message.data[3] & 0x03 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-          this.result = SUCCESS;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: SUCCESS,
+          };
           this.reset();
         } else {
-          this.result = ERROR;
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
           this.reset();
         }
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 11000) {
       if (message.id === PGN.CEM.id && message.data[3] & 0x03 === 0x01) {
-        this.result = ONGOING;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          // console.log(`报文内容出错${message}`);
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
+        this.reset();
+      }
+     // 报文切换过程中，增加两个周期的变换时间
+    } else if (now.valueOf() - this.firstMessageTimestamp >= 9000) {
+      if (message.id === PGN.CEM.id && message.data[3] & 0x03 === 0x01) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+        this.lastMessage = message;
+      } else if (message.id === PGN.CST.id) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        // console.log(`报文内容出错${message}`);
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容出错`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else if (message.id === PGN.CST.id) {
       if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-        this.result = ONGOING;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
         this.lastMessage = message;
       } else {
-        this.result = ERROR;
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为10ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
         this.reset();
       }
     } else {
-      this.result = ERROR;
-      this.reset();
-    }
-  }
-
-  judgeDN4002 = (message) => {
-    const now = new Date();
-    if (this.lastMessage === null) {
-      if (message.id === PGN.CST.id) {
-        this.lastMessage = message;
-        this.firstMessageTimestamp = now.valueOf();
-        this.result = ONGOING;
-      } else {
-        this.result = ERROR;
-        this.reset();
-      }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
-      if (message.id === PGN.CEM.id && message.data[3] & 0x03 === 0x01) {
-        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-          this.result = SUCCESS;
-          this.reset();
-        } else {
-          this.result = ERROR;
-          this.reset();
-        }
-      } else {
-        this.result = ERROR;
-        this.reset();
-      }
-    } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
-      if (message.id === PGN.CEM.id && message.data[3] & 0x03 === 0x01) {
-        this.result = ONGOING;
-        this.lastMessage = message;
-      } else {
-        this.result = ERROR;
-        this.reset();
-      }
-    } else if (message.id === PGN.CST.id) {
-      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
-        this.result = ONGOING;
-        this.lastMessage = message;
-      } else {
-        this.result = ERROR;
-        this.reset();
-      }
-    } else {
-      this.result = ERROR;
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: true,
+        errorContent: `${message.messageLabel}的报文内容错误`,
+        testStatus: ERROR,
+      };
       this.reset();
     }
   }
