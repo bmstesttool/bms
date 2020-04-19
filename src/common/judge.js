@@ -138,7 +138,7 @@ class Judge {
     }
   }
 
-  // OK
+  // OK  
   judgeDP1001 = (message) => {
     if (message.id === PGN.CHM.id) {
       if (message.data[0] === 0x00 && message.data[1] === 0x01 && message.data[2] === 0x01) {
@@ -150,7 +150,6 @@ class Judge {
           errorContent: `${message.messageLabel}的报文内容出错`,
           testStatus: ERROR,
         };
-        // console.log(`报文不正确${message}`);
         this.reset();
       }
     } else if (message.id === PGN.CEM.id) {
@@ -162,24 +161,22 @@ class Judge {
       };
       this.reset();
     } else {
-      // console.log(`报文不正确${message}`);
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容出错`,
+        errorContent: `此处应该只出现CHM和CEM, 不应该出现${message.messageLabel}`,
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
-  // OK
+  // OK 
   judgeDP1002 = (message) => {
     if (message.id === PGN.CHM.id) {
       if (message.data[0] === 0x01 && message.data[1] === 0x01 && message.data[2] === 0x00) {
         this.judgeInterval(message, 250, 5000);
       } else {
-        // console.log(`报文不正确${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
@@ -195,7 +192,6 @@ class Judge {
         }
         this.judgeInterval(message, 250, 5000);
       } else {
-        // console.log(`报文不正确${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
@@ -213,11 +209,10 @@ class Judge {
       };
       this.reset();
     } else {
-      // console.log(`报文不正确${message}`);
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容出错`,
+        errorContent: `此处只应该出现CHM, CRM-00和CEM, 不应该出现${message.messageLabel}的报文内容出错`,
         testStatus: ERROR,
       };
       this.reset();
@@ -230,7 +225,6 @@ class Judge {
       if (message.data[0] === 0xAA) {
         this.judgeInterval(message, 250, 5000);
       } else {
-        // console.log(`报文不正确${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
@@ -248,11 +242,10 @@ class Judge {
       };
       this.reset();
     } else {
-      // console.log(`报文不正确${message}`);
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: `此处应该只出现CRM-AA和CEM, 不应该出现${message.messageLabel}`,
         testStatus: ERROR,
       };
       this.reset();
@@ -273,17 +266,16 @@ class Judge {
           testStatus: ONGOING,
         };
       } else {
-        // console.log(`报文不正确${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: `此处只应该出现CRM-00`,
           testStatus: ERROR,
         };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10000) {
-      if (message.id === PGN.CEM.id) {
+      if (message.id === PGN.CEM.id && message.data[0] & 0x03 === 0x01) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
           this.result = {
             messageLabel: message.messageLabel,
@@ -293,7 +285,6 @@ class Judge {
           };
           this.reset();
         } else {
-          // console.log(`10s后报文周期出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -303,11 +294,10 @@ class Judge {
           this.reset();
         }
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: `此处只应该出现CEM，并且SPN3921=01`,
           testStatus: ERROR,
         };
         this.reset();
@@ -323,7 +313,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -333,11 +322,10 @@ class Judge {
           this.reset();
         }
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: `此处只应该出现CEM，并且SPN3921=01`,
           testStatus: ERROR,
         };
         this.reset();
@@ -361,11 +349,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: `此处只应该出现CRM-00或出现CEM，并且SPN3921=01`,
           testStatus: ERROR,
         };
         this.reset();
@@ -380,7 +367,6 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`10s前报文周期出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
@@ -390,11 +376,10 @@ class Judge {
         this.reset();
       }
     } else {
-      // console.log(`报文内容出错${message}`);
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容出错`,
+        errorContent: `此处只应该出现CRM-00或出现CEM，并且SPN3921=01`,
         testStatus: ERROR,
       };
       this.reset();
@@ -415,11 +400,10 @@ class Judge {
           testStatus: ONGOING,
         };
       } else {
-        // console.log(`报文不正确${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: `此处只应该出现CRM-AA`,
           testStatus: ERROR,
         };
         this.reset();
@@ -435,7 +419,6 @@ class Judge {
           };
           this.reset();
         } else {
-          // console.log(`10s后报文周期出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -445,11 +428,10 @@ class Judge {
           this.reset();
         }
       } else {
-        // console.log(`报文不正确${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: `此处只应该出现CEM, 并且SPN3922=01`,
           testStatus: ERROR,
         };
         this.reset();
@@ -465,7 +447,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -475,11 +456,10 @@ class Judge {
           this.reset();
         }
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: `此处只应该出现CEM, 并且SPN3922=01`,
           testStatus: ERROR,
         };
         this.reset();
@@ -503,11 +483,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: `此处只应该出现CRM-AA或出现CEM, 并且SPN3922=01`,
           testStatus: ERROR,
         };
         this.reset();
@@ -522,7 +501,6 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`10s前报文周期出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
@@ -532,11 +510,10 @@ class Judge {
         this.reset();
       }
     } else {
-      // console.log(`报文不正确${message}`);
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容出错`,
+        errorContent: `此处只应该出现CRM-AA或出现CEM, 并且SPN3922=01`,
         testStatus: ERROR,
       };
       this.reset();
@@ -554,11 +531,10 @@ class Judge {
           testStatus: ONGOING,
         };
       } else {
-        // console.log(`报文不正确${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: `此处只应该出现CML或CTS`,
           testStatus: ERROR,
         };
         this.reset();
@@ -626,11 +602,19 @@ class Judge {
         };
         this.reset();
       }
+    } else if (message.id === PGN.CEM.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
+      this.reset();
     } else {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容出错`,
+        errorContent: `此处只应该出现CRM, CML, CTS或CEM`,
         testStatus: ERROR,
       };
       this.reset();
@@ -703,11 +687,19 @@ class Judge {
         };
         this.reset();
       }
+    } else if (message.id === PGN.CEM.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
+      this.reset();
     } else {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: `此处只应该出现CML, CTM或CEM`,
         testStatus: ERROR,
       };
       this.reset();
@@ -729,7 +721,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: `此处只应该出现CRO-00或CEM`,
           testStatus: ERROR,
         };
         this.reset();
@@ -749,7 +741,7 @@ class Judge {
           this.result = this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
-            errorContent: `${message.messageLabel}的报文内容错误`,
+            errorContent: `此处发送CRO-00超过5s, 任然没有发送CRO-AA, 判定失败`,
             testStatus: ERROR,
           };
           this.reset();
@@ -763,24 +755,42 @@ class Judge {
           };
         }
       } else if (message.data[0] === 0xAA) {
-        if (this.lastMessage.data[0] === 0x00) {
-          this.lastMessage = message;
-          this.firstMessageTimestamp = now.valueOf();
-          this.result = {
-            messageLabel: message.messageLabel,
-            errorFlag: false,
-            errorContent: '',
-            testStatus: ONGOING,
-          };
-        } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
-          if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+        if (this.lastMessage) {
+          if (this.lastMessage.data[0] === 0x00) {
+            this.lastMessage = message;
+            this.firstMessageTimestamp = now.valueOf();
             this.result = {
               messageLabel: message.messageLabel,
               errorFlag: false,
               errorContent: '',
-              testStatus: SUCCESS,
+              testStatus: ONGOING,
             };
-            this.reset();
+          } else if (now.valueOf() - this.firstMessageTimestamp >= 5000) {
+            if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+              this.result = {
+                messageLabel: message.messageLabel,
+                errorFlag: false,
+                errorContent: '',
+                testStatus: SUCCESS,
+              };
+              this.reset();
+            } else {
+              this.result = {
+                messageLabel: message.messageLabel,
+                errorFlag: true,
+                errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+                testStatus: ERROR,
+              };
+              this.reset();
+            }
+          } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+            this.lastMessage = message;
+            this.result = {
+              messageLabel: message.messageLabel,
+              errorFlag: false,
+              errorContent: '',
+              testStatus: ONGOING,
+            };
           } else {
             this.result = {
               messageLabel: message.messageLabel,
@@ -790,29 +800,29 @@ class Judge {
             };
             this.reset();
           }
-        } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
-          this.lastMessage = message;
-          this.result = {
-            messageLabel: message.messageLabel,
-            errorFlag: false,
-            errorContent: '',
-            testStatus: ONGOING,
-          };
         } else {
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
-            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            errorContent: `没有出现过CRO-00`,
             testStatus: ERROR,
           };
           this.reset();
         }
       }
+    } else if (message.id === PGN.CEM.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
+      this.reset();
     } else {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: `此处只应该出现CML, CTS, CRO-00, CRO-AA或者CEM`,
         testStatus: ERROR,
       };
       this.reset();
