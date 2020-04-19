@@ -138,7 +138,7 @@ class Judge {
     }
   }
 
-  // OK  
+  // OK
   judgeDP1001 = (message) => {
     if (message.id === PGN.CHM.id) {
       if (message.data[0] === 0x00 && message.data[1] === 0x01 && message.data[2] === 0x01) {
@@ -171,7 +171,7 @@ class Judge {
     }
   }
 
-  // OK 
+  // OK
   judgeDP1002 = (message) => {
     if (message.id === PGN.CHM.id) {
       if (message.data[0] === 0x01 && message.data[1] === 0x01 && message.data[2] === 0x00) {
@@ -269,7 +269,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CRM-00`,
+          errorContent: '此处只应该出现CRM-00',
           testStatus: ERROR,
         };
         this.reset();
@@ -297,7 +297,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CEM，并且SPN3921=01`,
+          errorContent: '此处只应该出现CEM，并且SPN3921=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -325,7 +325,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CEM，并且SPN3921=01`,
+          errorContent: '此处只应该出现CEM，并且SPN3921=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -352,7 +352,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CRM-00或出现CEM，并且SPN3921=01`,
+          errorContent: '此处只应该出现CRM-00或出现CEM，并且SPN3921=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -379,7 +379,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `此处只应该出现CRM-00或出现CEM，并且SPN3921=01`,
+        errorContent: '此处只应该出现CRM-00或出现CEM，并且SPN3921=01',
         testStatus: ERROR,
       };
       this.reset();
@@ -403,7 +403,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CRM-AA`,
+          errorContent: '此处只应该出现CRM-AA',
           testStatus: ERROR,
         };
         this.reset();
@@ -431,7 +431,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CEM, 并且SPN3922=01`,
+          errorContent: '此处只应该出现CEM, 并且SPN3922=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -459,7 +459,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CEM, 并且SPN3922=01`,
+          errorContent: '此处只应该出现CEM, 并且SPN3922=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -486,7 +486,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CRM-AA或出现CEM, 并且SPN3922=01`,
+          errorContent: '此处只应该出现CRM-AA或出现CEM, 并且SPN3922=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -513,7 +513,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `此处只应该出现CRM-AA或出现CEM, 并且SPN3922=01`,
+        errorContent: '此处只应该出现CRM-AA或出现CEM, 并且SPN3922=01',
         testStatus: ERROR,
       };
       this.reset();
@@ -534,7 +534,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CML或CTS`,
+          errorContent: '此处只应该出现CML或CTS',
           testStatus: ERROR,
         };
         this.reset();
@@ -614,7 +614,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `此处只应该出现CRM, CML, CTS或CEM`,
+        errorContent: '此处只应该出现CRM, CML, CTS或CEM',
         testStatus: ERROR,
       };
       this.reset();
@@ -699,7 +699,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `此处只应该出现CML, CTM或CEM`,
+        errorContent: '此处只应该出现CML, CTM或CEM',
         testStatus: ERROR,
       };
       this.reset();
@@ -721,7 +721,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `此处只应该出现CRO-00或CEM`,
+          errorContent: '此处只应该出现CRO-00或CEM',
           testStatus: ERROR,
         };
         this.reset();
@@ -741,7 +741,7 @@ class Judge {
           this.result = this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
-            errorContent: `此处发送CRO-00超过5s, 任然没有发送CRO-AA, 判定失败`,
+            errorContent: '此处发送CRO-00超过5s, 任然没有发送CRO-AA, 判定失败',
             testStatus: ERROR,
           };
           this.reset();
@@ -804,7 +804,7 @@ class Judge {
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
-            errorContent: `没有出现过CRO-00`,
+            errorContent: '没有出现过CRO-00',
             testStatus: ERROR,
           };
           this.reset();
@@ -822,7 +822,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `此处只应该出现CML, CTS, CRO-00, CRO-AA或者CEM`,
+        errorContent: '此处只应该出现CML, CTS, CRO-00, CRO-AA或者CEM',
         testStatus: ERROR,
       };
       this.reset();
