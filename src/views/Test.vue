@@ -235,6 +235,24 @@ export default {
                   this.donotReceiveMessageTimer = null;
                 }, 1000);
               }
+              if (this.judgeResult.messageLabel === 'CEM' && this.currentTestCase.name.indexOf('DN') !== -1) {
+                clearTimeout(this.donotReceiveMessageTimer);
+                this.donotReceiveMessageTimer = setTimeout(() => {
+                  this.testCaseList[this.currentTestCase.index].result = '成功';
+                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                  this.switchToNextTestCase();
+                  this.donotReceiveMessageTimer = null;
+                }, 1000);
+              }
+              if (this.judgeResult.messageLabel === 'CST' && this.currentTestCase.name.indexOf('DP') !== -1) {
+                clearTimeout(this.donotReceiveMessageTimer);
+                this.donotReceiveMessageTimer = setTimeout(() => {
+                  this.testCaseList[this.currentTestCase.index].result = '成功';
+                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                  this.switchToNextTestCase();
+                  this.donotReceiveMessageTimer = null;
+                }, 1000);
+              }
             }
           }
           message.testCaseID = this.currentTestCase.id;
@@ -317,7 +335,7 @@ export default {
         this.resetCurrentProgram();
         this.currentTestCase = {};
         clearTimeout(this.cannotReceiveMessageTimer);
-        this.handleMessageTable();
+        // this.handleMessageTable();
       } else if (!this.testState && this.messageSaveFlag !== 1) {
         this.testState = true;
         // 添加当前测试编号
@@ -336,7 +354,7 @@ export default {
           this.$message.error('5s内未收到报文，请检查通讯是否正常');
           this.testCaseList[0].result = '失败';
           this.testCaseList[0].status = '测试完成';
-          this.handleMessageTable();
+          // this.handleMessageTable();
         }, 5000);
       } else {
         this.$message.error('正在存储上次测试结果，请稍后再试');
@@ -362,7 +380,7 @@ export default {
       const index = this.currentTestCase.index;
       if (index + 1 >= this.testCaseList.length) {
         this.testState = false;
-        this.handleMessageTable();
+        // this.handleMessageTable();
       } else {
         this.currentTestCase = this.testCaseList[index + 1];
         this.testCaseList[index + 1].status = '正在测试';
@@ -381,7 +399,7 @@ export default {
             this.$message.error('5s内未收到报文，请检查通讯是否正常');
             this.testCaseList[0].result = '失败';
             this.testCaseList[0].status = '测试完成';
-            this.handleMessageTable();
+            // this.handleMessageTable();
           }, 5000);
         }
       }
