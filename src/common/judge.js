@@ -706,7 +706,7 @@ class Judge {
     }
   }
 
-  // 跳过了CRO 00 的兼容 data[0]报错
+  // OK-待测
   judgeDP2003 = (message) => {
     const now = new Date();
     if (message.id === PGN.CML.id || message.id === PGN.CTS.id) {
@@ -846,7 +846,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该是CRM-AA',
           testStatus: ERROR,
         };
         this.reset();
@@ -874,7 +874,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3922=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -890,7 +890,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -903,7 +902,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3922=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -927,11 +926,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CRM-AA或出现CEM, 并且SPN3922=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -990,7 +988,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CML, CTS',
           testStatus: ERROR,
         };
         this.reset();
@@ -1018,7 +1016,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1034,7 +1032,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -1047,7 +1044,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1079,11 +1076,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CML, CTS或CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1128,7 +1124,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CML, CTS或CEM',
         testStatus: ERROR,
       };
       this.reset();
@@ -1160,7 +1156,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CML, CTS',
           testStatus: ERROR,
         };
         this.reset();
@@ -1188,7 +1184,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1206,7 +1202,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1238,11 +1234,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CML, CTS或CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1287,13 +1282,14 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CML, CTS或CEM, 并且SPN3923=01',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+  // OK
   judgeDN2007 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -1310,7 +1306,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CRO-00',
           testStatus: ERROR,
         };
         this.reset();
@@ -1338,7 +1334,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1367,7 +1363,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1391,11 +1387,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CRO-00或CEM, 并且SPN3923=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1422,7 +1417,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CRO-00或CEM',
         testStatus: ERROR,
       };
       this.reset();
@@ -1446,7 +1441,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CRO-AA',
           testStatus: ERROR,
         };
         this.reset();
@@ -1474,25 +1469,35 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 1500) {
       if (message.id === PGN.CEM.id && (message.data[2] & 0x0C) >> 2 === 0x01) {
-        this.result = {
-          messageLabel: message.messageLabel,
-          errorFlag: false,
-          errorContent: '',
-          testStatus: ONGOING,
-        };
-        this.lastMessage = message;
+        if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: false,
+            errorContent: '',
+            testStatus: ONGOING,
+          };
+          this.lastMessage = message;
+        } else {
+          this.result = {
+            messageLabel: message.messageLabel,
+            errorFlag: true,
+            errorContent: `${message.messageLabel}的报文周期出错，应该为250ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+            testStatus: ERROR,
+          };
+          this.reset();
+        }
       } else {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1516,11 +1521,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CRO-AA或CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1547,7 +1551,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CRO-AA或CEM',
         testStatus: ERROR,
       };
       this.reset();
@@ -1569,7 +1573,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应出现CCS, CST或CSD',
           testStatus: ERROR,
         };
         this.reset();
@@ -1630,14 +1634,14 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应出现CCS, CST或CSD',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
-  // 300?宝那边已经加了BST停止
+  // OK
   judgeDP3003 = (message) => {
     const now = new Date();
     if (message.id === PGN.CCS.id) {
@@ -1652,7 +1656,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应出现CST, CSD',
           testStatus: ERROR,
         };
         this.reset();
@@ -1694,18 +1698,25 @@ class Judge {
           testStatus: ONGOING,
         };
       }
+    } else if (message.id === PGN.CST.id || message.id === PGN.CSD.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
     } else {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应出现CCS, CST或CSD',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
-  // 需要调整
+  // 暂不测试
   judgeDP3005 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -1802,6 +1813,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDP3006 = (message) => {
     const now = new Date();
     if (message.id === PGN.CCS.id) {
@@ -1816,7 +1828,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CST或CSD',
           testStatus: ERROR,
         };
         this.reset();
@@ -1866,17 +1878,26 @@ class Judge {
         };
         this.reset();
       }
+    } else if (message.id === PGN.CST.id || message.id === PGN.CSD.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
     } else {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CCS, CST或CSD',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+
+  // OK
   judgeDP3007 = (message) => {
     const now = new Date();
     if (message.id === PGN.CST.id) {
@@ -1924,17 +1945,25 @@ class Judge {
         };
         this.reset();
       }
+    } else if (message.id === PGN.CST.id || message.id === PGN.CSD.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
     } else {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CST或CSD',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+  // OK
   judgeDN3001 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -1951,7 +1980,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CRO-AA',
           testStatus: ERROR,
         };
         this.reset();
@@ -1979,7 +2008,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3924=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -1995,7 +2024,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -2008,7 +2036,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3924=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2032,11 +2060,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: '此处只应该出现CRO-AA或CEM, 并且SPN3924=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2063,13 +2090,14 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CRO-AA或CEM',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+  // OK
   judgeDN3002 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -2086,7 +2114,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CRO-AA',
           testStatus: ERROR,
         };
         this.reset();
@@ -2114,7 +2142,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2130,7 +2158,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -2143,7 +2170,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2167,11 +2194,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: '此处只应该出现CRO-AA或CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2198,13 +2224,14 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CRO-AA或CEM',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+  // OK
   judgeDN3005 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -2221,7 +2248,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CCS',
           testStatus: ERROR,
         };
         this.reset();
@@ -2249,7 +2276,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3924=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2265,7 +2292,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -2278,7 +2304,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3924=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2302,11 +2328,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: '此处只应该出现CCS或CEM, 并且SPN3924=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2333,13 +2358,14 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CCS或CEM',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+  // OK
   judgeDN3006 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -2356,7 +2382,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CCS',
           testStatus: ERROR,
         };
         this.reset();
@@ -2384,7 +2410,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2412,7 +2438,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2436,11 +2462,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: '此处只应该出现CCS或CEM, 并且SPN3925=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2467,13 +2492,14 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CCS或CEM',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+  // OK
   judgeDN3009 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -2490,7 +2516,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CST',
           testStatus: ERROR,
         };
         this.reset();
@@ -2518,7 +2544,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM,并且SPN3926=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2534,7 +2560,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -2547,7 +2572,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM,并且SPN3926=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2571,11 +2596,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: '此处只应该出现CST或CEM,并且SPN3926=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2602,13 +2626,14 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CST或CEM',
         testStatus: ERROR,
       };
       this.reset();
     }
   }
 
+  // OK
   judgeDP4001 = (message) => {
     if (this.lastMessage === null) {
       const now = new Date();
@@ -2632,7 +2657,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CST或CSD',
           testStatus: ERROR,
         };
         this.reset();
@@ -2659,7 +2684,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CST或CSD',
         testStatus: ERROR,
       };
       this.reset();
@@ -2683,7 +2708,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CST',
           testStatus: ERROR,
         };
         this.reset();
@@ -2711,7 +2736,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3927=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2727,7 +2752,6 @@ class Judge {
           };
           this.lastMessage = message;
         } else {
-          // console.log(`报文内容出错${message}`);
           this.result = {
             messageLabel: message.messageLabel,
             errorFlag: true,
@@ -2740,7 +2764,7 @@ class Judge {
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容错误`,
+          errorContent: '此处只应该出现CEM, 并且SPN3927=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2764,11 +2788,10 @@ class Judge {
         };
         this.lastMessage = message;
       } else {
-        // console.log(`报文内容出错${message}`);
         this.result = {
           messageLabel: message.messageLabel,
           errorFlag: true,
-          errorContent: `${message.messageLabel}的报文内容出错`,
+          errorContent: '此处只应该出现CST或CEM, 并且SPN3927=01',
           testStatus: ERROR,
         };
         this.reset();
@@ -2795,7 +2818,7 @@ class Judge {
       this.result = {
         messageLabel: message.messageLabel,
         errorFlag: true,
-        errorContent: `${message.messageLabel}的报文内容错误`,
+        errorContent: '此处只应该出现CST或CEM',
         testStatus: ERROR,
       };
       this.reset();

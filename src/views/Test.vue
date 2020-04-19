@@ -226,34 +226,29 @@ export default {
                 default:
                   break;
               }
-              // if (this.currentTestCase.name === 'DP.4001') {
-              //   clearTimeout(this.donotReceiveMessageTimer);
-              //   this.donotReceiveMessageTimer = setTimeout(() => {
-              //     this.testCaseList[this.currentTestCase.index].result = '成功';
-              //     this.testCaseList[this.currentTestCase.index].status = '测试完成';
-              //     // this.switchToNextTestCase();
-              //     this.donotReceiveMessageTimer = null;
-              //   }, 1000);
-              // }
+              if (this.currentTestCase.name === 'DP.4001' && judgeResult.messageLabel === 'CSD') {
+                clearTimeout(this.donotReceiveMessageTimer);
+                this.donotReceiveMessageTimer = setTimeout(() => {
+                  if (this.testCaseList[this.currentTestCase.index].status === '正在测试') {
+                    this.testCaseList[this.currentTestCase.index].result = '成功';
+                    this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                    this.switchToNextTestCase();
+                    this.donotReceiveMessageTimer = null;
+                  }
+                }, 1000);
+              }
               if (judgeResult.messageLabel === 'CEM' && this.currentTestCase.name.indexOf('DN') !== -1) {
                 clearTimeout(this.donotReceiveMessageTimer);
                 this.donotReceiveMessageTimer = setTimeout(() => {
-                  this.testCaseList[this.currentTestCase.index].result = '成功';
-                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
-                  this.switchToNextTestCase();
-                  this.donotReceiveMessageTimer = null;
+                  if (this.testCaseList[this.currentTestCase.index].status === '正在测试') {
+                    this.testCaseList[this.currentTestCase.index].result = '成功';
+                    this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                    this.switchToNextTestCase();
+                    this.donotReceiveMessageTimer = null;
+                  }
                 }, 1000);
               }
               if (judgeResult.messageLabel === 'CST' && this.currentTestCase.name.indexOf('DP') !== -1 && this.currentTestCase.name !== 'DP.4001') {
-                clearTimeout(this.donotReceiveMessageTimer);
-                this.donotReceiveMessageTimer = setTimeout(() => {
-                  this.testCaseList[this.currentTestCase.index].result = '成功';
-                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
-                  this.switchToNextTestCase();
-                  this.donotReceiveMessageTimer = null;
-                }, 1000);
-              }
-              if (this.currentTestCase.name === 'DP.4001' && judgeResult.messageLabel === 'CSD') {
                 clearTimeout(this.donotReceiveMessageTimer);
                 this.donotReceiveMessageTimer = setTimeout(() => {
                   if (this.testCaseList[this.currentTestCase.index].status === '正在测试') {
@@ -272,7 +267,6 @@ export default {
             this.currentTestID = this.nedbLastTestID + 1;
           }
           message.testID = this.currentTestID;
-          // console.log('当前测试testID:'.concat(this.currentTestID));
           this.messageTable.push(message);
         }
       }
@@ -497,11 +491,17 @@ export default {
     handleMessageTable() {
       if (this.messageSaveFlag !== 1) {
         this.messageSaveFlag = 1;
-        this.$db.message.insert(this.messageTable, () => {
-          // this.messageTable.push(doc);
-          this.messageSaveFlag = 2;
-          this.$message.info('上次测试结果存储完成');
-          // this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
+        this.this.$db.message.find({ testID: this.currentTestID }, function (err, docs) {
+          if (docs.length === 0) {
+            this.$db.message.insert(this.messageTable, () => {
+              // this.messageTable.push(doc);
+              this.messageSaveFlag = 2;
+              this.$message.info('上次测试结果存储完成');
+              // this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
+            });
+          } else {
+            this.$message.warn(`改测试结果已经保存`);
+          }
         });
       }
     },
