@@ -138,6 +138,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDP1001 = (message) => {
     if (message.id === PGN.CHM.id) {
       if (message.data[0] === 0x00 && message.data[1] === 0x01 && message.data[2] === 0x01) {
@@ -152,6 +153,14 @@ class Judge {
         // console.log(`报文不正确${message}`);
         this.reset();
       }
+    } else if (message.id === PGN.CEM.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: SUCCESS,
+      };
+      this.reset();
     } else {
       // console.log(`报文不正确${message}`);
       this.result = {
@@ -705,7 +714,7 @@ class Judge {
     }
   }
 
-  // 跳过了CRO 00 的兼容
+  // 跳过了CRO 00 的兼容 data[0]报错
   judgeDP2003 = (message) => {
     const now = new Date();
     if (message.id === PGN.CML.id || message.id === PGN.CTS.id) {
@@ -1591,7 +1600,22 @@ class Judge {
           errorContent: '',
           testStatus: ONGOING,
         };
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文周期出错，应该为50ms,实际为${message.timestamp - this.lastMessage.timestamp}ms`,
+          testStatus: ERROR,
+        };
+        this.reset();
       }
+    } else if (message.id === PGN.CST.id || message.id === PGN.CSD.id) {
+      this.result = {
+        messageLabel: message.messageLabel,
+        errorFlag: false,
+        errorContent: '',
+        testStatus: ONGOING,
+      };
     } else {
       this.result = {
         messageLabel: message.messageLabel,
@@ -1694,7 +1718,7 @@ class Judge {
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10 * 60 * 1000 + 5000) {
-      if (message.id === PGN.CTS.id) {
+      if (message.id === PGN.CST.id) {
         if (Math.abs(message.timestamp - this.lastMessage.timestamp - 10) < 5) {
           this.result = {
             messageLabel: message.messageLabel,
@@ -1722,7 +1746,7 @@ class Judge {
         this.reset();
       }
     } else if (now.valueOf() - this.firstMessageTimestamp >= 10 * 60 * 1000) {
-      if (message.id === PGN.CTS.id) {
+      if (message.id === PGN.CST.id) {
         if (this.lastMessage.id === PGN.CCS.id) {
           this.lastMessage = message;
           this.result = {
@@ -1768,7 +1792,7 @@ class Judge {
     }
   }
 
-  judgeDP3006 = (message) => {  
+  judgeDP3006 = (message) => {
     const now = new Date();
     if (message.id === PGN.CCS.id) {
       if (this.lastMessage === null) {
@@ -1787,7 +1811,7 @@ class Judge {
         };
         this.reset();
       }
-    } else if (message.id === PGN.CTS.id) {
+    } else if (message.id === PGN.CST.id) {
       if (this.lastMessage === null) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
@@ -1845,7 +1869,7 @@ class Judge {
 
   judgeDP3007 = (message) => {
     const now = new Date();
-    if (message.id === PGN.CTS.id) {
+    if (message.id === PGN.CST.id) {
       if (this.lastMessage === null) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
@@ -2576,9 +2600,9 @@ class Judge {
   }
 
   judgeDP4001 = (message) => {
-    if (message.id === PGN.CSD.id) {
+    if (this.lastMessage === null) {
       const now = new Date();
-      if (this.lastMessage === null) {
+      if (message.id === PGN.CSD.id) {
         this.lastMessage = message;
         this.firstMessageTimestamp = now.valueOf();
         this.result = {
@@ -2587,7 +2611,24 @@ class Judge {
           errorContent: '',
           testStatus: ONGOING,
         };
-      } else if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
+      } else if (message.id === PGN.CST.id) {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: false,
+          errorContent: '',
+          testStatus: ONGOING,
+        };
+      } else {
+        this.result = {
+          messageLabel: message.messageLabel,
+          errorFlag: true,
+          errorContent: `${message.messageLabel}的报文内容错误`,
+          testStatus: ERROR,
+        };
+        this.reset();
+      }
+    } else if (message.id === PGN.CSD.id) {
+      if (Math.abs(message.timestamp - this.lastMessage.timestamp - 250) < 250 * 0.2) {
         this.lastMessage = message;
         this.result = {
           messageLabel: message.messageLabel,
@@ -2615,6 +2656,7 @@ class Judge {
     }
   }
 
+  // OK
   judgeDN4001 = (message) => {
     const now = new Date();
     if (this.lastMessage === null) {
@@ -2693,7 +2735,7 @@ class Judge {
         };
         this.reset();
       }
-     // 报文切换过程中，增加两个周期的变换时间
+      // 报文切换过程中，增加两个周期的变换时间
     } else if (now.valueOf() - this.firstMessageTimestamp >= 9000) {
       if (message.id === PGN.CEM.id && message.data[3] & 0x03 === 0x01) {
         this.result = {

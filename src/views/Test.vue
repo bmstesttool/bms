@@ -226,7 +226,16 @@ export default {
                 default:
                   break;
               }
-              if (this.currentTestCase.name === 'DP.4001') {
+              // if (this.currentTestCase.name === 'DP.4001') {
+              //   clearTimeout(this.donotReceiveMessageTimer);
+              //   this.donotReceiveMessageTimer = setTimeout(() => {
+              //     this.testCaseList[this.currentTestCase.index].result = '成功';
+              //     this.testCaseList[this.currentTestCase.index].status = '测试完成';
+              //     // this.switchToNextTestCase();
+              //     this.donotReceiveMessageTimer = null;
+              //   }, 1000);
+              // }
+              if (judgeResult.messageLabel === 'CEM' && this.currentTestCase.name.indexOf('DN') !== -1) {
                 clearTimeout(this.donotReceiveMessageTimer);
                 this.donotReceiveMessageTimer = setTimeout(() => {
                   this.testCaseList[this.currentTestCase.index].result = '成功';
@@ -235,7 +244,7 @@ export default {
                   this.donotReceiveMessageTimer = null;
                 }, 1000);
               }
-              if (this.judgeResult.messageLabel === 'CEM' && this.currentTestCase.name.indexOf('DN') !== -1) {
+              if (judgeResult.messageLabel === 'CST' && this.currentTestCase.name.indexOf('DP') !== -1 && this.currentTestCase.name !== 'DP.4001') {
                 clearTimeout(this.donotReceiveMessageTimer);
                 this.donotReceiveMessageTimer = setTimeout(() => {
                   this.testCaseList[this.currentTestCase.index].result = '成功';
@@ -244,13 +253,15 @@ export default {
                   this.donotReceiveMessageTimer = null;
                 }, 1000);
               }
-              if (this.judgeResult.messageLabel === 'CST' && this.currentTestCase.name.indexOf('DP') !== -1) {
+              if (this.currentTestCase.name === 'DP.4001' && judgeResult.messageLabel === 'CSD') {
                 clearTimeout(this.donotReceiveMessageTimer);
                 this.donotReceiveMessageTimer = setTimeout(() => {
-                  this.testCaseList[this.currentTestCase.index].result = '成功';
-                  this.testCaseList[this.currentTestCase.index].status = '测试完成';
-                  this.switchToNextTestCase();
-                  this.donotReceiveMessageTimer = null;
+                  if (this.testCaseList[this.currentTestCase.index].status === '正在测试') {
+                    this.testCaseList[this.currentTestCase.index].result = '成功';
+                    this.testCaseList[this.currentTestCase.index].status = '测试完成';
+                    this.switchToNextTestCase();
+                    this.donotReceiveMessageTimer = null;
+                  }
                 }, 1000);
               }
             }
