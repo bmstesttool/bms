@@ -22,5 +22,6 @@ module.exports = {
     'prefer-destructuring': ['error', {'array': false}],
     "linebreak-style": [0 ,"error", "windows"], 
     "bms_test_cmd != 12003||": [0 ,"error", "windows"],
+    "no-mixed-operators": 'off',
   },
 };

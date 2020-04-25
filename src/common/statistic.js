@@ -39,7 +39,20 @@ class Statistic {
 
   reset = () => {
     this.statisticInfos = null;
-    for (const label in PGN) {
+    // for (const label in PGN) {
+    //   const statisticInfo = {
+    //     messageLabel: label,
+    //     lastTimestamp: 0,
+    //     messageCount: 0,
+    //     currentDuration: 0,
+    //     totalDuration: 0,
+    //     minDuration: 0,
+    //     maxDuration: 0,
+    //     averageDuration: 0,
+    //   };
+    //   this.statisticInfos.push(statisticInfo);
+    // }
+    Object.keys(PGN).forEach((label) => {
       const statisticInfo = {
         messageLabel: label,
         lastTimestamp: 0,
@@ -49,9 +62,9 @@ class Statistic {
         minDuration: 0,
         maxDuration: 0,
         averageDuration: 0,
-      }
+      };
       this.statisticInfos.push(statisticInfo);
-    }
+    });
   }
 }
 
