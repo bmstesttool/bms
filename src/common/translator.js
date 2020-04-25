@@ -139,8 +139,26 @@ class Translator {
         message.messageLabel = 'BRM';
         break;
 
-      // BCP只会在多包报文中出现
       case PGN.BCP.code:
+        message = new Message(PGN.BCP);
+        message.flag = '接收';
+        message.data = data.slice(4);
+        message.text = `动力蓄电池充电参数报文BCP: ${PGN.BCP.description}`;
+        value = ((message.data[0] + (message.data[1] << 8)) / 100.0).toFixed(2);
+        message.text += `, 单体动力蓄电池最高允许充电电压: ${value}V`;
+        value = (400 - ((message.data[2] + (message.data[3] << 8)) / 10.0)).toFixed(1);
+        message.text += `, 最高允许充电电流: ${value}A`;
+        value = ((message.data[4] + (message.data[5] << 8)) / 10.0).toFixed(1);
+        message.text += `, 动力蓄电池标称总能量: ${value}kW·h`;
+        value = ((message.data[6] + (message.data[7] << 8)) / 10.0).toFixed(1);
+        message.text += `, 最高允许充电总电压: ${value}V`;
+        value = (message.data[8] - 50).toString();
+        message.text += `, 最高允许温度: ${value}°C`;
+        value = ((message.data[9] + (message.data[10] << 8)) / 10.0).toFixed(1);
+        message.text += `, 整车动力蓄电池荷电状态: ${value}%`;
+        value = ((message.data[11] + (message.data[12] << 8)) / 10.0).toFixed(1);
+        message.text += `, 整车动力蓄电池当前电池电压: ${value}V`;
+        message.messageLabel = 'BCP';
         break;
 
       case PGN.CTS.code:
@@ -199,8 +217,24 @@ class Translator {
         message.messageLabel = 'BCL';
         break;
 
-      // BCS只会在多包报文中出现
       case PGN.BCS.code:
+        message = new Message(PGN.BCS);
+        message.flag = '接收';
+        message.data = data.slice(4);
+        message.text = `电池充电总状态报文BCS: ${PGN.BCS.description}`;
+        value = ((message.data[0] + (message.data[1] << 8)) / 10.0).toFixed(1);
+        message.text += `, 充电电压测量值: ${value}V`;
+        value = (400 - ((message.data[2] + (message.data[3] << 8)) / 10.0)).toFixed(1);
+        message.text += `, 充电电流测量值: ${value}A`;
+        value = ((message.data[5] & 0xF0) >> 4).toString();
+        message.text += `, 最高单体动力蓄电池组号: ${value}`;
+        value = (message.data[4] + ((message.data[5] & 0x0F) << 8) / 10.0).toFixed(1);
+        message.text += ` 电压: ${value}`;
+        value = message.data[6].toString();
+        message.text += `, 当前荷电状态: ${value}%`;
+        value = (message.data[7] + (message.data[8] << 8)).toString();
+        message.text += `, 估计剩余充电时间: ${value}min`;
+        message.messageLabel = 'BCS';
         break;
 
       case PGN.CCS.code:

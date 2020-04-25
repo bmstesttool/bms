@@ -1,6 +1,6 @@
 import PGN from './pgn';
 
-class Translator {
+class Statistic {
   statisticInfos;
 
   constructor() {
@@ -11,7 +11,7 @@ class Translator {
     if (message.messageLabel === null) {
       return null;
     }
-    for (let i = 0; i < this.statisticInfos.length; i++) {
+    for (let i = 0; i < this.statisticInfos.length; i += 1) {
       if (message.messageLabel === this.statisticInfos[i].messageLabel) {
         if (this.statisticInfos[i].messageCount === 1) {
           this.statisticInfos[i].currentDuration = message.timestamp - this.statisticInfos[i].lastTimestamp;
@@ -39,7 +39,7 @@ class Translator {
 
   reset = () => {
     this.statisticInfos = null;
-    for (let label in PGN) {
+    for (const label in PGN) {
       const statisticInfo = {
         messageLabel: label,
         lastTimestamp: 0,
