@@ -86,7 +86,11 @@ class Translator {
         message = new Message(PGN.CHM);
         message.flag = '发送';
         message.data = data.slice(4);
-        message.text = `充电机报文CHM: ${PGN.CHM.description}, 充电机通信协议: V1.1`;
+        if (message.data.toString('hex') === '010001') {
+          message.text = `充电机报文CHM: ${PGN.CHM.description}, 充电机通信协议: V1.1`;
+        } else {
+          message.text = `充电机报文CHM: ${PGN.CHM.description}, 充电机通信协议: 未知`;
+        }
         message.messageLabel = 'CHM';
         break;
       case PGN.BHM.code:
@@ -121,7 +125,11 @@ class Translator {
         message.data = data.slice(4);
         message.dataLength = 8;
         message.flag = '接收';
-        message.text = `BMS和车辆辨识报文BRM: ${PGN.BRM.description}, BMS通信协议版本号: V1.1`;
+        if (message.data.toString('hex') === '010001') {
+          message.text = `BMS和车辆辨识报文BRM: ${PGN.BRM.description}, BMS通信协议版本号: V1.1`;
+        } else {
+          message.text = `BMS和车辆辨识报文BRM: ${PGN.BRM.description}, BMS通信协议版本号: 未知`;
+        }
         value = this.getBatteryType(data[7]);
         message.text += `, 电池类型: ${value}`;
         value = ((data[8] + (data[9] << 8)) / 10.0).toFixed(1);

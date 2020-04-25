@@ -184,6 +184,7 @@
       </div>
     </el-dialog>
     <el-button type="primary" class="new-button" @click="onClickNewProgram" disabled>新建</el-button>
+    <el-button type="primary" class="clear-button" @click="onClickClearPrograms">清空测试例</el-button>
   </div>
 </template>
 
@@ -336,9 +337,14 @@ export default {
           }
           this.$db.program.insert(programList, (err1, docs1) => {
             console.log(docs1);
+            this.updateProgramList();
           });
         }
       });
+    },
+    onClickClearPrograms() {
+      this.$db.program.remove({}, { multi: true });
+      this.updateProgramList();
     },
   },
 
@@ -364,5 +370,10 @@ export default {
   position: absolute;
   bottom: 10px;
   left: 10px;
+}
+.clear-button {
+  position: absolute;
+  bottom: 10px;
+  left: 80px;
 }
 </style>

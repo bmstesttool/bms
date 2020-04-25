@@ -37,6 +37,7 @@
         height="800"
         auto-resize
         show-overflow
+        :row-class-name="tableRowClassName"
       >
         <vxe-table-column type="seq" title="帧序号" width="50" align="center"></vxe-table-column>
         <vxe-table-column title="记录序号" field="testID" width="80" align="center"></vxe-table-column>
@@ -46,7 +47,7 @@
         <vxe-table-column title="时间戳" field="time" width="180" align="center"></vxe-table-column>
         <vxe-table-column title="帧ID" field="id" width="100" align="center">
           <template slot-scope="scope">
-            <span :class="scope.row.errorFlag ? 'errorMessage' : ''">0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+            <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
           </template>
         </vxe-table-column>
         <vxe-table-column title="报文标签" field="messageLabel" width="50" align="center"></vxe-table-column>
@@ -125,6 +126,14 @@ export default {
         this.$message.info('历史测试记录已经为空');
       }
     },
+    tableRowClassName({ row, rowIndex }) {
+      console.log(this.messageTable[rowIndex].errorFlag);
+      if (this.messageTable[rowIndex].errorFlag) {
+        console.log(row);
+        return 'warning-row';
+      }
+      return '';
+    },
   },
   mounted() {
     this.updateHistoryTestRecordIndexList();
@@ -134,7 +143,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .programTest {
   height: 100%;
   position: relative;
@@ -154,14 +163,14 @@ export default {
   bottom: 40px;
 }
 
-.errorMessage {
-  background: #F56C6C;
-}
-
 .clear-button {
   font-size: 12px;
   height: 30px;
   padding: 0px 10px;
   margin: 0px 10px;
+}
+
+.vxe-table /deep/ .warning-row {
+  background: #E6A23C !important;
 }
 </style>

@@ -42,8 +42,8 @@
         </el-select>
         <el-button type="primary" size="mini" @click="onClickStartTest" :disabled="!open || !currentProgram">{{testState ? '结束测试' : '开始测试'}}</el-button>
         <el-button type="primary" size="mini" @click="handleMessageTable">保存</el-button>
-        <!-- <el-button type="primary" size="mini" @click="clearMessageSql">清空数据库</el-button>
-        <el-button type="primary" size="mini" @click="addMessageSql">添加数据</el-button> -->
+        <el-button type="primary" size="mini" @click="clearMessageSql">清空数据库</el-button>
+        <el-button type="primary" size="mini" @click="addMessageSql">添加数据</el-button>
       </div>
     </div>
     <div class="message-area">
@@ -95,6 +95,7 @@
             height="800"
             auto-resize
             show-overflow
+            :row-class-name="tableRowClassName"
           >
             <vxe-table-column type="seq" title="帧序号" width="100" align="center"></vxe-table-column>
             <vxe-table-column title="报文标签" field="messageLabel" width="50" align="center"></vxe-table-column>
@@ -102,13 +103,31 @@
             <vxe-table-column title="时间戳" field="time" width="180" align="center"></vxe-table-column>
             <vxe-table-column title="帧ID" field="id" width="100" align="center">
               <template slot-scope="scope">
-                 <span :class="scope.row.errorFlag ? 'errorMessage' : ''">0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+                 <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
               </template>
             </vxe-table-column>
             <vxe-table-column title="数据长度" field="dataLength" width="70" align="center"></vxe-table-column>
             <vxe-table-column title="数据" field="dataStr" width="300" show-overflow-tooltip></vxe-table-column>
             <vxe-table-column title="报文翻译" field="text" show-overflow-tooltip></vxe-table-column>
             <vxe-table-column title="失败原因" field="errorContent" show-overflow-tooltip></vxe-table-column>
+          </vxe-table>
+        </el-tab-pane>
+        <el-tab-pane label="报文统计" name="statistic">
+          <vxe-table
+            ref="messageStatisticTable"
+            :data="messageStatisticTable"
+            size="mini"
+            border
+            height="800"
+            auto-resize
+            show-overflow
+          >
+            <vxe-table-column title="报文标签" field="messageLabel" width="50" align="center"></vxe-table-column>
+            <vxe-table-column title="报文总次数" field="messageCount" width="70" align="center"></vxe-table-column>
+            <vxe-table-column title="当前间隔时间" field="currentDuration" width="150" align="center"></vxe-table-column>
+            <vxe-table-column title="最小间隔时间" field="minDuration" width="150" align="center"></vxe-table-column>
+            <vxe-table-column title="最大间隔时间" field="maxDuration" width="150" align="center"></vxe-table-column>
+            <vxe-table-column title="平均间隔时间" field="averageDuration" width="150"></vxe-table-column>
           </vxe-table>
         </el-tab-pane>
       </el-tabs>
@@ -118,6 +137,7 @@
 
 <script>
 import Translator from '@/common/translator';
+import Statistic from '@/common/statistic';
 import Judge from '@/common/judge';
 
 const SerialPort = require('serialport');
@@ -140,9 +160,11 @@ export default {
         listened: false,
       },
       messageTable: [],
+      messageStatisticTable: [],
       socket: null,
       server: null,
       translator: new Translator(),
+      statistic: new Statistic(),
       judge: new Judge(),
       currentTestCase: {},
       testCaseList: [],
@@ -267,6 +289,7 @@ export default {
             this.currentTestID = this.nedbLastTestID + 1;
           }
           message.testID = this.currentTestID;
+          this.messageStatisticTable = this.statistic.statistic(message);
           this.messageTable.push(message);
         }
       }
@@ -347,6 +370,8 @@ export default {
         if (this.currentTestID === -1) {
           this.currentTestID = this.nedbLastTestID + 1;
         }
+        // 重置Statistic信息
+        this.statistic.reset();
         this.messageTable = [];
         this.messageSaveFlag = 0;
         this.resetCurrentProgram();
@@ -505,6 +530,15 @@ export default {
         });
       }
     },
+
+    tableRowClassName({ row, rowIndex }) {
+      console.log(this.messageTable[rowIndex].errorFlag);
+      if (this.messageTable[rowIndex].errorFlag) {
+        console.log(row);
+        return 'warning-row';
+      }
+      return '';
+    },
   },
 
   mounted() {
@@ -553,7 +587,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .programTest {
   height: 100%;
   position: relative;
@@ -579,5 +613,9 @@ export default {
 
 .errorMessage {
   background: #F56C6C;
+}
+
+.vxe-table /deep/ .warning-row {
+  background: #E6A23C !important;
 }
 </style>

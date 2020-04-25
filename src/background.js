@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { app, protocol, BrowserWindow } from 'electron';
+import { app, protocol, BrowserWindow, ipcMain } from 'electron';
 import {
   createProtocol,
   // installVueDevtools,
@@ -10,7 +10,6 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
-
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }]);
 
@@ -19,6 +18,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1600,
     height: 1000,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
     },
@@ -92,3 +92,20 @@ if (isDevelopment) {
     });
   }
 }
+
+//接收最小化命令
+ipcMain.on('window-min', function() {
+    mainWindow.minimize();
+})
+//接收最大化命令
+ipcMain.on('window-max', function() {
+    if (mainWindow.isMaximized()) {
+        mainWindow.restore();
+    } else {
+        mainWindow.maximize();
+    }
+})
+//接收关闭命令
+ipcMain.on('window-close', function() {
+    mainWindow.close();
+})
