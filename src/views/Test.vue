@@ -98,12 +98,12 @@
             :row-class-name="tableRowClassName"
           >
             <vxe-table-column type="seq" title="帧序号" width="100" align="center"></vxe-table-column>
-            <vxe-table-column title="报文标签" field="messageLabel" width="50" align="center"></vxe-table-column>
+            <vxe-table-column title="报文标签" field="messageLabel" width="100" align="center"></vxe-table-column>
             <vxe-table-column title="收发标志" field="flag" width="70" align="center"></vxe-table-column>
             <vxe-table-column title="时间戳" field="time" width="180" align="center"></vxe-table-column>
             <vxe-table-column title="帧ID" field="id" width="100" align="center">
               <template slot-scope="scope">
-                 <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
+                <span>0x{{ scope.row.id.toString(16).toUpperCase() }}</span>
               </template>
             </vxe-table-column>
             <vxe-table-column title="数据长度" field="dataLength" width="70" align="center"></vxe-table-column>
@@ -122,12 +122,12 @@
             auto-resize
             show-overflow
           >
-            <vxe-table-column title="报文标签" field="messageLabel" width="50" align="center"></vxe-table-column>
-            <vxe-table-column title="报文总次数" field="messageCount" width="70" align="center"></vxe-table-column>
-            <vxe-table-column title="当前间隔时间" field="currentDuration" width="150" align="center"></vxe-table-column>
-            <vxe-table-column title="最小间隔时间" field="minDuration" width="150" align="center"></vxe-table-column>
-            <vxe-table-column title="最大间隔时间" field="maxDuration" width="150" align="center"></vxe-table-column>
-            <vxe-table-column title="平均间隔时间" field="averageDuration" width="150"></vxe-table-column>
+            <vxe-table-column title="报文标签" field="messageLabel" width="100" align="center"></vxe-table-column>
+            <vxe-table-column title="报文总次数" field="messageCount" width="120" align="center"></vxe-table-column>
+            <vxe-table-column title="当前间隔时间(ms)" field="currentDuration" align="center"></vxe-table-column>
+            <vxe-table-column title="最小间隔时间(ms)" field="minDuration" align="center"></vxe-table-column>
+            <vxe-table-column title="最大间隔时间(ms)" field="maxDuration" align="center"></vxe-table-column>
+            <vxe-table-column title="平均间隔时间(ms)" field="averageDuration" align="center"></vxe-table-column>
           </vxe-table>
         </el-tab-pane>
       </el-tabs>
@@ -532,7 +532,7 @@ export default {
     },
 
     tableRowClassName({ row, rowIndex }) {
-      console.log(this.messageTable[rowIndex].errorFlag);
+      // console.log(this.messageTable[rowIndex].errorFlag);
       if (this.messageTable[rowIndex].errorFlag) {
         console.log(row);
         return 'warning-row';

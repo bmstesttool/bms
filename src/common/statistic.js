@@ -29,8 +29,8 @@ class Statistic {
         this.statisticInfos[i].messageCount += 1;
         this.statisticInfos[i].lastTimestamp = message.timestamp;
         this.statisticInfos[i].totalDuration += this.statisticInfos[i].currentDuration;
-        if (this.statisticInfos[i].messageCount > 0) {
-          this.statisticInfos[i].averageDuration = (this.statisticInfos[i].totalDuration / this.statisticInfos[i].messageCount * 1000).toFixed(1);
+        if (this.statisticInfos[i].messageCount > 1) {
+          this.statisticInfos[i].averageDuration = (this.statisticInfos[i].totalDuration / (this.statisticInfos[i].messageCount - 1)).toFixed(1);
         }
       }
     }
@@ -38,7 +38,7 @@ class Statistic {
   }
 
   reset = () => {
-    this.statisticInfos = null;
+    this.statisticInfos = [];
     // for (const label in PGN) {
     //   const statisticInfo = {
     //     messageLabel: label,
