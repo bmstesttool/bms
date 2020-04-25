@@ -42,8 +42,8 @@
         </el-select>
         <el-button type="primary" size="mini" @click="onClickStartTest" :disabled="!open || !currentProgram">{{testState ? '结束测试' : '开始测试'}}</el-button>
         <el-button type="primary" size="mini" @click="handleMessageTable">保存</el-button>
-        <el-button type="primary" size="mini" @click="clearMessageSql">清空数据库</el-button>
-        <el-button type="primary" size="mini" @click="addMessageSql">添加数据</el-button>
+        <!-- <el-button type="primary" size="mini" @click="clearMessageSql">清空数据库</el-button>
+        <el-button type="primary" size="mini" @click="addMessageSql">添加数据</el-button> -->
       </div>
     </div>
     <div class="message-area">
@@ -491,7 +491,7 @@ export default {
     handleMessageTable() {
       if (this.messageSaveFlag !== 1) {
         this.messageSaveFlag = 1;
-        this.this.$db.message.find({ testID: this.currentTestID }, function (err, docs) {
+        this.this.$db.message.find({ testID: this.currentTestID }, (err, docs) => {
           if (docs.length === 0) {
             this.$db.message.insert(this.messageTable, () => {
               // this.messageTable.push(doc);
@@ -500,7 +500,7 @@ export default {
               // this.$refs.messageTable.bodyWrapper.scrollTop = this.$refs.messageTable.bodyWrapper.scrollHeight;
             });
           } else {
-            this.$message.warn(`改测试结果已经保存`);
+            this.$message.warn('改测试结果已经保存');
           }
         });
       }

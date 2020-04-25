@@ -29,8 +29,8 @@
       <vxe-table-column title="操作">
         <template v-slot="{ row }">
           <template>
-            <el-button size="mini" type="primary" @click="onClickEditProgram(row)">编辑</el-button>
-            <el-button size="mini" type="danger" @click="onClickDeleteProgram(row)">删除</el-button>
+            <el-button class="is-disabled" disabled="disabled" size="mini" type="primary" @click="onClickEditProgram(row)">编辑</el-button>
+            <el-button class="is-disabled" disabled="disabled" size="mini" type="danger" @click="onClickDeleteProgram(row)">删除</el-button>
           </template>
         </template>
       </vxe-table-column>
@@ -183,8 +183,7 @@
         <el-button type="primary" size="small" @click="onClickNewProgramOk">确定</el-button>
       </div>
     </el-dialog>
-
-    <el-button type="primary" class="new-button" @click="onClickNewProgram">新建</el-button>
+    <el-button type="primary" class="new-button" @click="onClickNewProgram" disabled>新建</el-button>
   </div>
 </template>
 
@@ -320,9 +319,31 @@ export default {
       }
       return false;
     },
+    async createDefaultTestProgramList() {
+      const programList = [];
+      const now = moment();
+      this.$db.program.find({}).sort({ createTime: 1 }).exec((err, docs) => {
+        if (docs.length === 0) {
+          for (let i = 0; i < this.testCaseList.length; i += 1) {
+            programList.push({
+              createTime: moment(now.valueOf() + i * 1000).format('YYYY-MM-DD HH:mm:ss'),
+              operator: sessionStorage.getItem('username'),
+              name: this.testCaseList[i].name,
+              item: [
+                this.testCaseList[i],
+              ],
+            });
+          }
+          this.$db.program.insert(programList, (err1, docs1) => {
+            console.log(docs1);
+          });
+        }
+      });
+    },
   },
 
   mounted() {
+    this.createDefaultTestProgramList();
     this.updateProgramList();
   },
 };

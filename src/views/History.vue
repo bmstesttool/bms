@@ -2,21 +2,31 @@
   <div class="programTest">
     <div class="function-area">
       <span style="margin-left: 20px;">请选择历史测试记录: </span>
-        <el-select
-          v-model="currentHistoryTestRecordIndex"
-          placeholder="请选择"
-          size="mini"
-          value-key="name"
-          @change="onSelectHistoryTestRecord"
+      <el-select
+        v-model="currentHistoryTestRecordIndex"
+        placeholder="请选择"
+        size="mini"
+        value-key="name"
+        @change="onSelectHistoryTestRecord"
+      >
+        <el-option
+          v-for="(historyTestRecordIndex, index) in historyTestRecordIndexList"
+          :key="index"
+          :label="historyTestRecordIndex"
+          :value="historyTestRecordIndex"
         >
-          <el-option
-            v-for="(historyTestRecordIndex, index) in historyTestRecordIndexList"
-            :key="index"
-            :label="historyTestRecordIndex"
-            :value="historyTestRecordIndex"
-          >
-          </el-option>
-        </el-select>
+        </el-option>
+      </el-select>
+      <el-popconfirm
+        confirmButtonText='确定'
+        cancelButtonText='取消'
+        icon="el-icon-info"
+        iconColor="red"
+        title="是否清空历史测试记录"
+        @onConfirm="clearMessageSql()"
+      >
+        <el-button class="clear-button" slot="reference">清空历史测试记录</el-button>
+      </el-popconfirm>
     </div>
     <div class="message-area">
       <vxe-table
@@ -74,36 +84,50 @@ export default {
         }
       });
     },
-  },
-
-  mounted() {
-    // 创建索引
-    this.$db.message.find({}).sort({ testID: -1 }).limit(1).exec((err, docs) => {
-      if (err === null) {
-        if (docs.length > 0) {
-          this.nedbLastTestID = docs[0].testID;
-        } else {
-          // 第一次测试
-          this.nedbLastTestID = 0;
-        }
-        console.log(this.nedbLastTestID);
-        this.currentHistoryTestRecordIndex = this.nedbLastTestID;
-        this.historyTestRecordIndexList = [];
-        for (let i = this.currentHistoryTestRecordIndex; i > 0; i -= 1) {
-          this.historyTestRecordIndexList.push(i);
-        }
-        // 设置初始值
-        console.log(this.currentHistoryTestRecordIndex);
-        this.$db.message.find({ testID: this.currentHistoryTestRecordIndex }).sort({ time: 1 }).exec((err1, docs1) => {
-          if (err1 === null) {
-            if (docs1.length > 0) {
-              console.log(docs1);
-              this.messageTable = docs1;
-            }
+    updateHistoryTestRecordIndexList() {
+      // 创建索引
+      this.$db.message.find({}).sort({ testID: -1 }).limit(1).exec((err, docs) => {
+        if (err === null) {
+          if (docs.length > 0) {
+            this.nedbLastTestID = docs[0].testID;
+          } else {
+            // 第一次测试
+            this.nedbLastTestID = 0;
           }
-        });
+          console.log(this.nedbLastTestID);
+          this.currentHistoryTestRecordIndex = this.nedbLastTestID;
+          this.historyTestRecordIndexList = [];
+          for (let i = this.currentHistoryTestRecordIndex; i > 0; i -= 1) {
+            this.historyTestRecordIndexList.push(i);
+          }
+          // 设置初始值
+          console.log(this.currentHistoryTestRecordIndex);
+          this.$db.message.find({ testID: this.currentHistoryTestRecordIndex }).sort({ time: 1 }).exec((err1, docs1) => {
+            if (err1 === null) {
+              if (docs1.length > 0) {
+                console.log(docs1);
+                this.messageTable = docs1;
+              } else {
+                this.messageTable = [];
+              }
+            } else {
+              this.messageTable = [];
+            }
+          });
+        }
+      });
+    },
+    clearMessageSql() {
+      if (this.historyTestRecordIndexList.length > 0) {
+        this.$db.message.remove({}, { multi: true });
+        this.updateHistoryTestRecordIndexList();
+      } else {
+        this.$message.info('历史测试记录已经为空');
       }
-    });
+    },
+  },
+  mounted() {
+    this.updateHistoryTestRecordIndexList();
   },
   destroyed() {
   },
@@ -132,5 +156,12 @@ export default {
 
 .errorMessage {
   background: #F56C6C;
+}
+
+.clear-button {
+  font-size: 12px;
+  height: 30px;
+  padding: 0px 10px;
+  margin: 0px 10px;
 }
 </style>
