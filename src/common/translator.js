@@ -84,6 +84,7 @@ class Translator {
     switch (data[1]) {
       case PGN.CHM.code:
         message = new Message(PGN.CHM);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.flag = '发送';
         message.data = data.slice(4);
         if (message.data.toString('hex') === '010001') {
@@ -95,6 +96,7 @@ class Translator {
         break;
       case PGN.BHM.code:
         message = new Message(PGN.BHM);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '接收';
         value = ((data[4] + (data[5] << 8)) / 10.0).toFixed(1);
@@ -103,6 +105,7 @@ class Translator {
         break;
       case PGN.CRM.code:
         message = new Message(PGN.CRM);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.dataLength = length - 4;
         message.flag = '发送';
@@ -122,6 +125,7 @@ class Translator {
         break;
       case PGN.BRM.code:
         message = new Message(PGN.BRM);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.dataLength = 8;
         message.flag = '接收';
@@ -141,6 +145,7 @@ class Translator {
 
       case PGN.BCP.code:
         message = new Message(PGN.BCP);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.flag = '接收';
         message.data = data.slice(4);
         message.text = `动力蓄电池充电参数报文BCP: ${PGN.BCP.description}`;
@@ -163,6 +168,7 @@ class Translator {
 
       case PGN.CTS.code:
         message = new Message(PGN.CTS);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '发送';
         message.text = '充电机发送时间同步信息报文CTS: '
@@ -172,6 +178,7 @@ class Translator {
         break;
       case PGN.CML.code:
         message = new Message(PGN.CML);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '发送';
         message.text = `充电机最大输出能力报文CML: ${PGN.CML.description}`;
@@ -187,6 +194,7 @@ class Translator {
         break;
       case PGN.BRO.code:
         message = new Message(PGN.BRO);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '接收';
         message.text = `BMS充电准备就绪报文BRO: ${PGN.BRO.description}`;
@@ -196,6 +204,7 @@ class Translator {
         break;
       case PGN.CRO.code:
         message = new Message(PGN.CRO);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '发送';
         message.text = `充电机输出准备就绪报文CRO: ${PGN.CRO.description}`;
@@ -205,6 +214,7 @@ class Translator {
         break;
       case PGN.BCL.code:
         message = new Message(PGN.BCL);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '接收';
         message.text = `电池充电需求报文BCL: ${PGN.BCL.description}`;
@@ -219,6 +229,7 @@ class Translator {
 
       case PGN.BCS.code:
         message = new Message(PGN.BCS);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.flag = '接收';
         message.data = data.slice(4);
         message.text = `电池充电总状态报文BCS: ${PGN.BCS.description}`;
@@ -239,6 +250,7 @@ class Translator {
 
       case PGN.CCS.code:
         message = new Message(PGN.CCS);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '发送';
         message.text = `充电机充电状态报文CCS: ${PGN.CCS.description}`;
@@ -254,6 +266,7 @@ class Translator {
         break;
       case PGN.BSM.code:
         message = new Message(PGN.BSM);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '接收';
         message.text = `BMS发送动力蓄电池状态信息报文BSM: ${PGN.BSM.description}`;
@@ -310,6 +323,7 @@ class Translator {
       // 可选
       case PGN.BMV.code:
         message = new Message(PGN.BMV);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.flag = '接收';
         message.text = '';
         message.messageLabel = 'BMV';
@@ -317,6 +331,7 @@ class Translator {
       // 可选
       case PGN.BMT.code:
         message = new Message(PGN.BMT);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.flag = '接收';
         message.text = '';
         message.messageLabel = 'BMT';
@@ -324,6 +339,7 @@ class Translator {
       // 可选
       case PGN.BSP.code:
         message = new Message(PGN.BSP);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.flag = '接收';
         message.text = '';
         message.messageLabel = 'BSP';
@@ -331,6 +347,7 @@ class Translator {
 
       case PGN.BST.code:
         message = new Message(PGN.BST);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '接收';
         message.text = `BMS中止充电报文BST: ${PGN.BST.description}`;
@@ -380,6 +397,7 @@ class Translator {
         break;
       case PGN.CST.code:
         message = new Message(PGN.CST);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '发送';
         message.text = `充电机中止充电报文CST: ${PGN.CST.description}`;
@@ -423,6 +441,7 @@ class Translator {
         break;
       case PGN.BSD.code:
         message = new Message(PGN.BSD);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '接收';
         message.text = `BMS统计数据报文BSD: ${PGN.BSD.description}`;
@@ -440,6 +459,7 @@ class Translator {
         break;
       case PGN.CSD.code:
         message = new Message(PGN.CSD);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '发送';
         message.text = `充电机统计数据报文CSD: ${PGN.CSD.description}`;
@@ -453,6 +473,7 @@ class Translator {
         break;
       case PGN.BEM.code:
         message = new Message(PGN.BEM);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '接收';
         message.text = `BMS错误报文BEM: ${PGN.BEM.description}`;
@@ -481,6 +502,7 @@ class Translator {
         break;
       case PGN.CEM.code:
         message = new Message(PGN.CEM);
+        message.id = data[0] << 24 + data[1] << 16 + data[2] << 8 + data[3];
         message.data = data.slice(4);
         message.flag = '发送';
         message.text = `充电机错误报文: ${PGN.CEM.description}`;

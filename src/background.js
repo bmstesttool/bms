@@ -1,5 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { app, protocol, BrowserWindow, ipcMain } from 'electron';
+import {
+  app, protocol, BrowserWindow, ipcMain,
+} from 'electron';
 import {
   createProtocol,
   // installVueDevtools,
@@ -93,19 +95,19 @@ if (isDevelopment) {
   }
 }
 
-//接收最小化命令
-ipcMain.on('window-min', function() {
-    mainWindow.minimize();
-})
-//接收最大化命令
-ipcMain.on('window-max', function() {
-    if (mainWindow.isMaximized()) {
-        mainWindow.restore();
-    } else {
-        mainWindow.maximize();
-    }
-})
-//接收关闭命令
-ipcMain.on('window-close', function() {
-    mainWindow.close();
-})
+// 接收最小化命令
+ipcMain.on('window-min', () => {
+  win.minimize();
+});
+// 接收最大化命令
+ipcMain.on('window-max', () => {
+  if (win.isMaximized()) {
+    win.restore();
+  } else {
+    win.maximize();
+  }
+});
+// 接收关闭命令
+ipcMain.on('window-close', () => {
+  win.close();
+});
