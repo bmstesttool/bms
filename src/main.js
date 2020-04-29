@@ -4,6 +4,7 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import 'xe-utils';
 import VXETable from 'vxe-table';
+import VXETablePluginExportXLSX from 'vxe-table-plugin-export-xlsx';
 import 'vxe-table/lib/index.css';
 
 import db from '@/common/db';
@@ -15,6 +16,7 @@ import store from './store';
 Vue.use(ElementUI);
 
 Vue.use(VXETable);
+VXETable.use(VXETablePluginExportXLSX);
 
 Vue.db = Vue.prototype.$db = db;
 

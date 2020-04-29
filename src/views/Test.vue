@@ -87,6 +87,7 @@
             <el-table-column label="数据" prop="dataStr" width="300" show-overflow-tooltip></el-table-column>
             <el-table-column label="报文翻译" prop="text" show-overflow-tooltip></el-table-column>
           </el-table> -->
+          <el-button type="primary" @click="handleExportMessage" size="mini">导出</el-button>
           <vxe-table
             ref="messageTable"
             :data="messageTable"
@@ -113,6 +114,7 @@
           </vxe-table>
         </el-tab-pane>
         <el-tab-pane label="报文统计" name="statistic">
+          <el-button type="primary" @click="handleExportMessageStatistic" size="mini">导出</el-button>
           <vxe-table
             ref="messageStatisticTable"
             :data="messageStatisticTable"
@@ -141,7 +143,6 @@ import Statistic from '@/common/statistic';
 import Judge from '@/common/judge';
 
 const SerialPort = require('serialport');
-// const InterByteTimeout = require('@serialport/parser-inter-byte-timeout');
 const Delimiter = require('@serialport/parser-delimiter');
 const net = require('net');
 
@@ -538,6 +539,21 @@ export default {
         return 'warning-row';
       }
       return '';
+    },
+
+    handleExportMessage() {
+      this.$refs.messageTable.exportData({
+        filename: '报文翻译',
+        sheetName: '报文翻译',
+        type: 'xlsx',
+      });
+    },
+    handleExportMessageStatistic() {
+      this.$refs.messageStatisticTable.exportData({
+        filename: '报文统计',
+        sheetName: '报文统计',
+        type: 'xlsx',
+      });
     },
   },
 
