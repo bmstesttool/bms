@@ -7,8 +7,7 @@
       show-header-overflow
       show-overflow
       highlight-hover-row
-      height="850"
-      max-height="850"
+      height="640"
       resizable
       size="small"
     >
@@ -41,6 +40,7 @@
       title="编辑"
       :visible.sync="editProgramDialogVisible"
       width="1200px"
+      top="5vh"
       :modal="false"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -105,6 +105,7 @@
       title="新建"
       :visible.sync="newProgramDialogVisible"
       width="1200px"
+      top="5vh"
       :modal="false"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -183,8 +184,8 @@
         <el-button type="primary" size="small" @click="onClickNewProgramOk">确定</el-button>
       </div>
     </el-dialog>
-    <el-button type="primary" class="new-button" @click="onClickNewProgram" disabled>新建</el-button>
-    <el-button type="primary" class="clear-button" @click="onClickClearPrograms">清空测试例</el-button>
+    <el-button type="primary" size="small" class="new-button" @click="onClickNewProgram" disabled>新建</el-button>
+    <el-button type="primary" size="small" class="clear-button" @click="onClickClearPrograms">清空测试例</el-button>
   </div>
 </template>
 
@@ -194,7 +195,13 @@ import moment from 'moment';
 
 export default {
   name: 'edit',
-
+  props: {
+    editDisplay: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+  },
   data() {
     return {
       programList: [],
@@ -348,6 +355,15 @@ export default {
     },
   },
 
+  watch: {
+    editDisplay(newVal) {
+      if (newVal === true) {
+        console.log(`editDisplay: ${this.editDisplay}`);
+        this.updateProgramList();
+      }
+    },
+  },
+
   mounted() {
     this.createDefaultTestProgramList();
     this.updateProgramList();
@@ -358,7 +374,6 @@ export default {
 <style lang="scss" scoped>
 .edit-container {
   width: 100%;
-  padding: 5px;
 }
 
 .test-case-list {
@@ -367,13 +382,9 @@ export default {
   overflow-y: auto;
 }
 .new-button {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
+  margin-top: 15px;
 }
 .clear-button {
-  position: absolute;
-  bottom: 10px;
-  left: 80px;
+  margin-top: 15px;
 }
 </style>

@@ -1,0 +1,30 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "968465",
+      "name": "编辑",
+      "font_class": "edit",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    },
+    {
+      "icon_id": "2552778",
+      "name": "测试",
+      "font_class": "ceshi",
+      "unicode": "e6ac",
+      "unicode_decimal": 59052
+    },
+    {
+      "icon_id": "8626801",
+      "name": "历史记录",
+      "font_class": "lishijilu",
+      "unicode": "e85f",
+      "unicode_decimal": 59487
+    }
+  ]
+}
