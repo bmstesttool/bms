@@ -466,7 +466,7 @@ export default {
 }
 
 .export-button {
-  margin-top: 10px;
+  margin-top: 15px;
   margin-left: 10px;
 }
 

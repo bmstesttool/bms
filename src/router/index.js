@@ -1,13 +1,13 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 
-const Container = () => import('@/views/Container.vue');
+// const Container = () => import('@/views/Container.vue');
 const Home = () => import('@/views/Home.vue');
 const Login = () => import('@/views/Login.vue');
 
-const Edit = () => import('@/views/Edit.vue');
-const Test = () => import('@/views/Test.vue');
-const History = () => import('@/views/History.vue');
+// const Edit = () => import('@/views/Edit.vue');
+// const Test = () => import('@/views/Test.vue');
+// const History = () => import('@/views/History.vue');
 
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
